@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git worktrees
+.worktrees/
+.claude/worktrees/
+
+# Claude
+.claude/settings.local.json
+
+# Environment
+.env
+.env.local
+.env.*.local
