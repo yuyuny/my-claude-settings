@@ -6,9 +6,10 @@
 | 탐색 (SCOPE) | `haiku` — 병렬 2~3개 |
 | 구현/리뷰 (IMPLEMENT, REVIEW) | `sonnet` |
 | 설계/평가 (Planner, Evaluator) | `opus` |
+| 회고 (Reflector) | `sonnet` |
 
 ## 워크플로우
-`/plan` → `/generate` → `/evaluate` (별도 세션)
+`/plan` → `/generate` → `/evaluate` (별도 세션) → `/reflect`
 - 상세 프로세스는 각 커맨드 파일 참고 (`.claude/commands/`)
 
 ## 핵심 규칙
@@ -25,3 +26,4 @@
 - `specs/` — Planner 스펙 (수정 금지)
 - `handoffs/` — Generator → Evaluator 컨텍스트
 - `evaluation/` — Evaluator 보고서
+- `reflections/` — 세션 회고 기록
