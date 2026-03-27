@@ -4,4 +4,5 @@
     "defaultMode": "plan"
   },
   "model": "opusplan",
+  "enabledPlugins": {}
 }

@@ -61,9 +61,24 @@ Launch parallel (haiku):
 - **가중 평균 7.0 이상 + 모든 항목 5.0 이상 + VERIFY 전체 통과**: → PASS
 - **그 외**: → FAIL + 구체적 개선 피드백
 
+### Step 7: 스펙 체크박스 업데이트 (PASS 시에만)
+
+PASS 판정을 내린 경우에만 `specs/{title}.md`의 체크박스를 업데이트합니다:
+
+1. **딜리버블 체크박스**: 각 `- [ ]`를 `- [x]`로 변경
+2. **VERIFY 체크박스**: 각 `- [ ]`를 `- [x]`로 변경
+3. 워크트리에서 커밋:
+```bash
+cd .worktrees/{title}
+git add specs/{title}.md
+git commit -m "docs: mark spec deliverables as verified"
+```
+
+FAIL 판정 시에는 specs 파일을 수정하지 않습니다.
+
 ## 출력 형식
 
-`evaluation/{title}.md`에 저장:
+워크트리 내 `evaluation/{title}.md`에 저장 (경로: `.worktrees/{title}/evaluation/{title}.md`):
 
 ```markdown
 # Evaluation: {세션 제목}
