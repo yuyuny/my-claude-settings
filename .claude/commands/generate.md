@@ -122,7 +122,7 @@ pnpm build       # 빌드 (해당 시)
 
 ## 규칙
 - 스펙에 없는 기능을 임의로 추가하지 않음 (scope creep 방지)
-- `specs/{title}.md`의 체크박스를 수정하지 않음 — 체크박스 업데이트는 Evaluator PASS 후에만 수행
+- `specs/{title}.md`의 체크박스를 수정하지 않음 — 체크박스는 Evaluator가 PASS 판정 후 직접 업데이트함
 - VERIFY 통과 전 절대 핸드오프하지 않음
 - 컨텍스트가 길어지면 현재까지 진행 상황을 handoffs/{title}.md에 기록하고 새 세션 시작 가능
 - 모든 작업은 반드시 `.worktrees/{title}` 에서 진행 (메인 브랜치 직접 수정 금지)
