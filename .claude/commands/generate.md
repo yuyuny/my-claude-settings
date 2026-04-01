@@ -9,8 +9,27 @@
 
 ## 프로세스
 
-### Step 0: Worktree 생성
-작업 시작 전 격리된 워크트리를 생성합니다:
+### Step 0: 워크스페이스 준비
+
+#### Step 0a: 스펙 커밋 (신규 작업 시)
+워크트리 생성 전, 스펙 파일을 main 브랜치에 커밋합니다.
+스펙이 이미 커밋된 경우(재작업 포함) 이 단계를 건너뜁니다.
+
+```bash
+# 스펙 파일 존재 확인
+ls specs/{title}.md || { echo "ERROR: specs/{title}.md not found. /plan을 먼저 실행하세요."; exit 1; }
+
+# 커밋되지 않은 경우에만 커밋 (untracked 또는 modified)
+git ls-files --error-unmatch specs/{title}.md 2>/dev/null && git diff --quiet HEAD -- specs/{title}.md || {
+  git add specs/{title}.md
+  git commit -m "docs: add spec for {title}"
+}
+```
+
+**주의**: `specs/{title}.md`만 스테이징합니다. 다른 변경 사항은 커밋하지 않습니다.
+
+#### Step 0b: 워크트리 생성
+격리된 워크트리를 생성합니다:
 ```bash
 git worktree add .worktrees/{title} -b {title}
 cd .worktrees/{title}
