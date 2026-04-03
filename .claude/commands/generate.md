@@ -1,4 +1,4 @@
-# Generator Agent (haiku + sonnet)
+# Generator Agent (sonnet + opus)
 
 스펙을 읽고 기존 워크플로우(SCOPE→PLAN→IMPLEMENT→REVIEW→VERIFY→REFLECT)에 따라 구현합니다.
 **모든 작업은 `.worktrees/{title}` 에서 진행합니다.**
@@ -39,10 +39,10 @@ cd .worktrees/{title}
 cd .worktrees/{title}
 ```
 
-### Step 1: SCOPE — 병렬 탐색 (haiku × 2~3)
+### Step 1: SCOPE — 병렬 탐색 (sonnet × 2~3)
 구현 전 영향 범위를 병렬 탐색 에이전트로 파악합니다:
 ```
-Launch parallel (haiku):
+Launch parallel (sonnet):
   Agent 1: 영향 받는 파일/모듈 탐색
   Agent 2: 기존 테스트 커버리지 확인
   Agent 3: 관련 상태 흐름 / 의존성 추적
@@ -74,10 +74,10 @@ Launch parallel (haiku):
 
 테스트 없이 구현하지 않습니다. 테스트가 불가능한 부분(UI 레이아웃 등)은 명시적으로 기록합니다.
 
-### Step 4: REVIEW — diff 기반 코드 리뷰 (sonnet)
+### Step 4: REVIEW — diff 기반 코드 리뷰 (opus)
 매 2~3개 태스크 완료 후 리뷰를 수행합니다:
 
-1. `/simplify` 스킬을 실행하여 diff 기반 리뷰 수행
+1. `/simplify` 스킬을 `opus` 모델로 실행하여 diff 기반 리뷰 수행
 2. 리뷰 결과를 핸드오프의 **REVIEW 로그** 섹션에 기록:
    - 실행 시점 (어떤 태스크 완료 후)
    - 발견된 이슈 (없으면 "이슈 없음")

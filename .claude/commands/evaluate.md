@@ -38,7 +38,7 @@ Generator의 VERIFY 결과를 신뢰하지 말 것 — 직접 확인.
 
 병렬 탐색으로 효율화 가능:
 ```
-Launch parallel (haiku):
+Launch parallel (sonnet):
   Agent 1: 테스트 스위트 실행 + 결과 수집
   Agent 2: 코드 구조/품질 정적 분석
 ```

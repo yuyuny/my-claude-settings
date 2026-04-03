@@ -2,12 +2,13 @@
 
 ## 모델 배정
 
-| 작업                           | 모델                 |
-| ------------------------------ | -------------------- |
-| 탐색 (SCOPE)                   | `haiku` — 병렬 2~3개 |
-| 구현/리뷰 (IMPLEMENT, REVIEW)  | `sonnet`             |
-| 설계/평가 (Spec Writer, Evaluator) | `opus`               |
-| 회고 (Reflector)               | `sonnet`             |
+| 작업                               | 모델                   |
+| ---------------------------------- | ---------------------- |
+| 탐색 (SCOPE)                       | `sonnet` — 병렬 2~3개 |
+| 구현 (IMPLEMENT)                   | `sonnet`               |
+| 리뷰 (REVIEW)                      | `opus`                 |
+| 설계/평가 (Spec Writer, Evaluator) | `opus`                 |
+| 회고 (Reflector)                   | `sonnet`               |
 
 ## 워크플로우
 
