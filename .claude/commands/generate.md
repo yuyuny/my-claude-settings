@@ -17,7 +17,7 @@
 
 ```bash
 # 스펙 파일 존재 확인
-ls specs/{title}.md || { echo "ERROR: specs/{title}.md not found. /plan을 먼저 실행하세요."; exit 1; }
+ls specs/{title}.md || { echo "ERROR: specs/{title}.md not found. /spec을 먼저 실행하세요."; exit 1; }
 
 # 커밋되지 않은 경우에만 커밋 (untracked 또는 modified)
 git ls-files --error-unmatch specs/{title}.md 2>/dev/null && git diff --quiet HEAD -- specs/{title}.md || {

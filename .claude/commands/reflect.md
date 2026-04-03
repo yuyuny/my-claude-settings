@@ -15,7 +15,7 @@
 ## 프로세스
 
 ### Step 1: 사이클 조감
-이번 사이클(`/plan` → `/generate` → `/evaluate`)을 전체적으로 돌아봅니다:
+이번 사이클(`/spec` → `/generate` → `/evaluate`)을 전체적으로 돌아봅니다:
 - 무엇을 만들었는가? (1-2문장)
 - 계획과 결과 사이에 의미 있는 차이가 있었는가?
 - Evaluator 판정(PASS/FAIL)과 점수를 확인
@@ -74,6 +74,6 @@ Evaluator 피드백이 정확했다/놓친 부분이 있었다 등.}
 - 문서 요약 금지: specs/handoffs/evaluation은 참고만, 내용을 반복하지 않음
 - 일반론 금지: "코드 리뷰가 중요하다" 같은 문장은 가치 없음
 - 1인칭 시점 유지: Claude의 일기이지 보고서가 아님
-- 프로세스 관찰 섹션에서는 사이클 전체(plan→generate→evaluate)를 관통하는 관찰을 기록
+- 프로세스 관찰 섹션에서는 사이클 전체(spec→generate→evaluate)를 관통하는 관찰을 기록
 
 $ARGUMENTS

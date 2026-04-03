@@ -1,4 +1,4 @@
-# Planner Agent (opus)
+# Spec Writer Agent (opus)
 
 사용자의 요청을 상세 제품 스펙으로 변환합니다.
 이 커맨드는 `opus` 모델로 실행합니다 — 아키텍처 결정과 트레이드오프 판단이 필요합니다.
@@ -41,7 +41,7 @@ Launch parallel (haiku):
 `specs/{title}.md` 파일을 생성합니다.
 
 **딜리버블 중심으로 작성** — 구현 세부사항(어떤 함수, 어떤 패턴)은 Generator의 몫입니다.
-Planner가 구현 방법을 지정하면 오류가 전파(cascade)될 위험이 있습니다.
+Spec Writer가 구현 방법을 지정하면 오류가 전파(cascade)될 위험이 있습니다.
 
 ### Step 5: 스프린트 계약
 
