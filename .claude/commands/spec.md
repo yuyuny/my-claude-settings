@@ -50,6 +50,17 @@ Spec Writer가 구현 방법을 지정하면 오류가 전파(cascade)될 위험
 
 **검증 기준도 반드시 포함**: 빌드, 테스트, 타입체크, 린트 통과 여부.
 
+### Step 6: 스펙 커밋
+
+스펙 파일을 main 브랜치에 커밋합니다:
+
+```bash
+git add specs/{title}.md
+git commit -m "docs: add spec for {title}"
+```
+
+**주의**: `specs/{title}.md`만 스테이징합니다. 다른 변경 사항은 커밋하지 않습니다.
+
 ## 출력 형식
 
 ```markdown
