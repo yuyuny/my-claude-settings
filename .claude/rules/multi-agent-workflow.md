@@ -10,6 +10,8 @@
 | 설계/평가 (Spec Writer, Evaluator) | `opus`                 |
 | 회고 (Reflector)                   | `sonnet`               |
 
+> 메인 세션은 `sonnet`을 가정. `/generate`를 `opus`로 띄우면 IMPLEMENT/PLAN 전구간 비용 급증.
+
 ## 워크플로우
 
 `/spec` → `/generate` → `/evaluate` (별도 세션) → `/reflect`
@@ -25,6 +27,16 @@
 - `/simplify`로 매 2-3 태스크 후 diff 기반 코드 리뷰 (결과는 핸드오프 REVIEW 로그에 기록)
 - VERIFY 통과 전 핸드오프 금지
 - 독립 작업은 항상 병렬 실행
+- 참고 자료(specs/handoffs/evaluation 등)는 필요한 부분만 인용 — 요약·재작성 금지
+
+## 서브에이전트 출력 계약
+
+모든 서브에이전트(SCOPE, REVIEW 등)는 메인 세션 컨텍스트를 보호하기 위해 다음 규칙을 따름:
+
+- **Bullet-only 반환**: bullet 리스트로만 반환. raw 코드·파일 내용 덤프 금지. 코드 스니펫은 3줄 이내.
+- **15 bullet 상한**: 에이전트당 최대 15개 bullet. 초과 시 우선순위 top 15로 선별.
+- **파일 직접 쓰기 우선**: 결과가 파일(핸드오프/평가/회고)에 저장될 것이라면, 서브에이전트가 직접 append하고 메인에는 "완료 Y/N + critical 여부"만 보고.
+- **문서 요약 금지**: 참고 자료는 필요한 부분만 인용. 요약·재작성 금지.
 
 ## 디렉토리
 
