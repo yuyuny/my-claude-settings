@@ -50,8 +50,7 @@ Launch parallel (sonnet):
 ```
 
 ### Step 4: 동작 검증
-핸드오프의 "동작 확인 방법"에 따라 실제 실행합니다:
-- 테스트 스위트 실행: 전체 통과 여부 확인
+핸드오프의 "동작 확인 방법"에 따라 앱을 직접 실행합니다:
 - 앱 실행: 주요 시나리오 수동 확인
 - (프론트엔드) 스크린샷 또는 Playwright 등으로 인터랙션 테스트
 
@@ -141,13 +140,8 @@ FAIL 판정 시에는 specs 파일을 수정하지 않습니다.
 - **워크트리 확인**: 반드시 `.worktrees/{title}` 에서 검증 수행
 
 ## PASS 후 머지
-Evaluator가 PASS 판정을 내리면 머지 권고를 보고서에 포함합니다:
-```bash
-cd .worktrees/{title}
-git checkout main
-git merge {title}
-git worktree remove .worktrees/{title}
-git branch -d {title}
-```
+PASS 판정 시 보고서에 다음 머지 명령을 텍스트로 안내합니다 (Evaluator가 직접 실행하지 않음 — 사람이 확인 후 수행):
+
+`git checkout main && git merge {title} && git worktree remove .worktrees/{title} && git branch -d {title}`
 
 $ARGUMENTS

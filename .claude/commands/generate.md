@@ -1,6 +1,6 @@
 # Generator Agent (sonnet + opus)
 
-스펙을 읽고 기존 워크플로우(SCOPE→PLAN→IMPLEMENT→REVIEW→VERIFY→REFLECT)에 따라 구현합니다.
+스펙을 읽고 기존 워크플로우(SCOPE→PLAN→IMPLEMENT→REVIEW→VERIFY)에 따라 구현합니다.
 **모든 작업은 `.worktrees/{title}` 에서 진행합니다.**
 
 ## 입력
@@ -39,12 +39,10 @@ cd .worktrees/{title}
 Launch parallel (sonnet):
   Agent 1: 영향 받는 파일/모듈 탐색
            → bullet: `경로/파일.ts — 이유`
-  Agent 2: 기존 테스트 커버리지 확인
+  Agent 2: 기존 테스트 커버리지 확인 (기존 테스트가 없으면 스킵)
            → bullet: `테스트파일.ts — 커버하는 범위`
   Agent 3: 관련 상태 흐름 / 의존성 추적
-           — spec의 "영향 받는 경로" 섹션을 기준으로 탐색
-           — 주 경로뿐 아니라 대체 경로(동일 결과를 내는 우회 분기, 별도 훅, 사이드이펙트를 발생시키는 연동 지점 등) 포함
-           — SCOPE 결과에서 대체 경로가 미확인된 항목은 PLAN 전 코드에서 직접 확인
+           — spec의 "영향 받는 경로" 섹션 기준, 대체 경로 포함
            → 대체 경로는 별도 섹션 "대체 경로"로 묶어 반환
 ```
 재작업인 경우 `evaluation/{title}.md`의 FAIL 피드백을 먼저 확인합니다.
@@ -57,7 +55,7 @@ Launch parallel (sonnet):
 메인 세션에는 "태스크 수 N개 / 불명확 지점 M개"만 유지합니다.
 
 불명확한 부분(가정)은 핸드오프의 "Known Gotchas" 또는 "## 가정" 섹션에 기록합니다.
-spec의 "영향 받는 경로 — 대체 경로" 항목이 SCOPE에서 확인되지 않았다면 구현 전 코드에서 반드시 직접 확인합니다.
+SCOPE에서 대체 경로가 미확인된 항목은 구현 전 코드에서 반드시 직접 확인합니다.
 
 ### Step 3: IMPLEMENT — TDD 루프 (sonnet)
 각 마이크로태스크마다:
@@ -92,15 +90,7 @@ spec의 "영향 받는 경로 — 대체 경로" 항목이 SCOPE에서 확인되
 실패 시: 메인이 서브에이전트에게 "실패 명령어의 에러 요약 10줄 이내"를 후속 요청합니다. 에러 전체 dump 금지.
 하나라도 실패하면 핸드오프 금지 — 수정 후 재실행합니다.
 
-### Step 6: REFLECT — 돌아보기
-변경 사항을 돌아보고 교훈을 기록합니다:
-- 예상과 다르게 진행된 부분
-- 발견한 기술 부채
-- 다음 스프린트에 참고할 사항
-
-이 내용은 핸드오프 파일에 포함합니다.
-
-### Step 7: HANDOFF — 핸드오프 작성
+### Step 6: HANDOFF — 핸드오프 작성
 모든 검증 통과 후 워크트리 내에 `handoffs/{title}.md`를 작성합니다.
 (경로: `.worktrees/{title}/handoffs/{title}.md`)
 이 파일이 Evaluator에게 전달되는 **유일한 컨텍스트**입니다.
