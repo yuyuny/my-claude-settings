@@ -28,7 +28,7 @@
 - Generator는 `.worktrees/{title}`에서 작업 (메인 브랜치 직접 수정 금지)
 - Evaluator는 반드시 Generator와 다른 세션에서 실행
 - 검증 게이트 강제 — 게이트 정의는 `.claude/rules/verify-commands.md` 참조. 코드 영역 기본값: TDD (RED → GREEN → REFACTOR). 테스트가 불가능한 영역(UI 레이아웃, 에셋, 밸런싱 수치 등)은 대체 검증 수단을 스펙의 검증 기준에 명시하고, 핸드오프에 사유를 기록할 것.
-- `/simplify`로 매 2-3 태스크 후 diff 기반 코드 리뷰 (결과는 핸드오프 REVIEW 로그에 기록)
+- `/simplify`로 diff 기반 코드 리뷰 — **세션당 최소 1회 필수** + 매 2-3 태스크당 1회 (결과는 핸드오프 REVIEW 로그에 기록). 태스크 수가 적어도 면제되지 않음.
 - VERIFY 통과 전 핸드오프 금지
 - 독립 작업은 항상 병렬 실행
 - 참고 자료(specs/handoffs/evaluation 등)는 필요한 부분만 인용 — 요약·재작성 금지
