@@ -17,9 +17,11 @@
 git ls-files --error-unmatch specs/{title}.md 2>/dev/null || { echo "ERROR: specs/{title}.md가 커밋되지 않았습니다. /spec을 먼저 실행하세요."; exit 1; }
 git worktree add .worktrees/{title} -b {title}
 cd .worktrees/{title}
+pnpm install --frozen-lockfile   # 워크트리는 메인의 node_modules를 공유하지 않음
 ```
 
 재작업인 경우 기존 워크트리로 이동: `cd .worktrees/{title}`
+워크트리에 `node_modules`가 없으면 `pnpm install --frozen-lockfile` 선행 실행.
 
 ### Step 1: SCOPE — 병렬 탐색 (sonnet × 2~3)
 구현 전 영향 범위를 병렬 탐색 에이전트로 파악합니다.
