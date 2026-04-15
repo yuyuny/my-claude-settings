@@ -24,10 +24,10 @@
 
 ## 핵심 규칙
 
-- 세션 식별자는 kebab-case: `auth-login`, `dashboard-ui`
+- 세션 식별자는 kebab-case: `auth-login`, `player-movement`
 - Generator는 `.worktrees/{title}`에서 작업 (메인 브랜치 직접 수정 금지)
 - Evaluator는 반드시 Generator와 다른 세션에서 실행
-- TDD 강제 (RED → GREEN → REFACTOR)
+- 검증 게이트 강제 — 게이트 정의는 `.claude/rules/verify-commands.md` 참조. 코드 영역 기본값: TDD (RED → GREEN → REFACTOR). 테스트가 불가능한 영역(UI 레이아웃, 에셋, 밸런싱 수치 등)은 대체 검증 수단을 스펙의 검증 기준에 명시하고, 핸드오프에 사유를 기록할 것.
 - `/simplify`로 매 2-3 태스크 후 diff 기반 코드 리뷰 (결과는 핸드오프 REVIEW 로그에 기록)
 - VERIFY 통과 전 핸드오프 금지
 - 독립 작업은 항상 병렬 실행

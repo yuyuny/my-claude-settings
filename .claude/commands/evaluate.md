@@ -24,10 +24,7 @@ Generator의 결과물을 독립적으로 평가합니다.
 Generator의 워크트리로 이동하여 직접 재실행합니다:
 ```bash
 cd .worktrees/{title}
-pnpm test:run    # 또는 프로젝트의 테스트 명령
-pnpm typecheck
-pnpm lint
-pnpm build       # 해당 시
+# .claude/rules/verify-commands.md 를 읽고 정의된 게이트 명령을 순차 실행
 ```
 Generator의 VERIFY 결과를 신뢰하지 말 것 — 직접 확인.
 
@@ -50,9 +47,9 @@ Launch parallel (sonnet):
 ```
 
 ### Step 4: 동작 검증
-핸드오프의 "동작 확인 방법"에 따라 앱을 직접 실행합니다:
-- 앱 실행: 주요 시나리오 수동 확인
-- (프론트엔드) 스크린샷 또는 Playwright 등으로 인터랙션 테스트
+핸드오프의 "동작 확인 방법"에 따라 직접 실행합니다:
+- 주요 시나리오 수동 확인
+- 프로젝트 유형에 따라 적절한 검증 수단 사용 (UI: 인터랙션 테스트 / CLI: 실행 결과 / 게임: 플레이 스모크 / 서비스: API 호출 등)
 
 ### Step 5: 채점
 
