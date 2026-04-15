@@ -1,46 +1,41 @@
-# Spec Writer Agent (opus)
+# Spec Writer Agent (sonnet)
 
-사용자의 요청을 상세 제품 스펙으로 변환합니다.
-이 커맨드는 `opus` 모델로 실행합니다 — 아키텍처 결정과 트레이드오프 판단이 필요합니다.
+브레인스토밍 산출물(`brainstorms/{title}.md`)을 읽고 정형 스펙 문서로 변환합니다.
+이 커맨드는 `sonnet` 모델로 실행합니다 — 정해진 템플릿 채우기와 딜리버블 정제가 목적입니다.
+
+요구사항이 모호하다면 `/brainstorm` (opus) 을 먼저 실행하세요.
+요구사항이 이미 메인 세션에서 명확히 정의된 경우 `/brainstorm` 없이 바로 실행해도 됩니다.
 
 ## 프로세스
 
-### Step 1: 소크라틱 브레인스토밍
+### Step 1: 입력 결정
 
-사용자와 대화하며 요구사항을 정제합니다:
+- `brainstorms/{title}.md` 가 있으면 → 1차 입력으로 사용 (SCOPE 재실행 금지)
+- 없으면 → 메인 세션 컨텍스트를 1차 입력으로 사용. 짧은 확인 1~2개만 던지고 바로 작성
 
-- "이 기능의 최종 사용자는 누구인가?"
-- "성공을 어떻게 측정할 것인가?"
-- "반드시 포함해야 할 것과 제외할 것은?"
-- "기술 스택에 제약이 있는가?"
+### Step 2: SCOPE
 
-질문은 한 번에 최대 3개. 충분한 컨텍스트가 모이면 스펙 작성으로 넘어갑니다.
+- **brainstorms/{title}.md 있음**: "영향 받는 경로" 섹션을 스펙으로 **그대로 복사**. 탐색 에이전트 재실행 금지.
+- **없음**: 병렬 탐색 에이전트(sonnet × 2~3)로 영향 범위 파악.
 
-### Step 2: 병렬 탐색 (SCOPE)
+  **출력 계약**: 서브에이전트 출력 계약(`.claude/rules/multi-agent-workflow.md`) 준수.
+  각 에이전트는 `파일경로 — 1줄 근거` 형식 bullet 리스트로만 반환. raw 코드 덤프 금지.
 
-기존 코드베이스가 있는 경우, 병렬 탐색 에이전트(sonnet×2~3)로 영향 범위를 먼저 파악합니다.
+  ```
+  Launch parallel (sonnet):
+    1. 관련 파일/모듈 구조 탐색 → bullet: `경로/파일.ts — 이유`
+    2. 기존 패턴/컨벤션 확인   → bullet: `경로/파일.ts — 어떤 패턴`
+    3. 의존성/영향 범위 분석   → bullet: `경로/파일.ts — 영향 방향`
+  ```
 
-**출력 계약**: 서브에이전트 출력 계약(`.claude/rules/multi-agent-workflow.md`) 준수. 각 에이전트는 `파일경로 — 1줄 근거` 형식의 bullet 리스트로만 반환. raw 코드 덤프 금지.
+### Step 3: 세션 제목 확정
 
-```
-Launch parallel (sonnet):
-  1. 관련 파일/모듈 구조 탐색 → bullet: `경로/파일.ts — 이유`
-  2. 기존 패턴/컨벤션 확인   → bullet: `경로/파일.ts — 어떤 패턴`
-  3. 의존성/영향 범위 분석   → bullet: `경로/파일.ts — 영향 방향`
-```
-
-탐색 결과의 bullet을 스펙의 "영향 받는 경로" 섹션에 그대로 기록합니다. 코드 스니펫 덤프 금지 — 파일 경로와 한 줄 설명만.
-
-### Step 3: 세션 제목 결정
-
-각 스프린트에 의미 있는 kebab-case 제목을 부여합니다.
-
-- 좋은 예: `auth-login`, `dashboard-charts`, `payment-stripe`, `search-api`
-- 나쁜 예: `sprint-1`, `feature-a`, `misc-fixes`
+- brainstorms/{title}.md 가 있으면 그 제목을 그대로 사용
+- 없으면 kebab-case 제목을 결정 (`auth-login`, `dashboard-charts` 등)
 
 ### Step 4: 스펙 작성
 
-`specs/{title}.md` 파일을 생성합니다.
+`specs/{title}.md` 파일을 아래 출력 형식으로 생성합니다.
 
 **딜리버블 중심으로 작성** — 구현 세부사항(어떤 함수, 어떤 패턴)은 Generator의 몫입니다.
 Spec Writer가 구현 방법을 지정하면 오류가 전파(cascade)될 위험이 있습니다.
@@ -53,8 +48,6 @@ Spec Writer가 구현 방법을 지정하면 오류가 전파(cascade)될 위험
 **검증 기준도 반드시 포함**: 빌드, 테스트, 타입체크, 린트 통과 여부.
 
 ### Step 6: 스펙 커밋
-
-스펙 파일을 main 브랜치에 커밋합니다:
 
 ```bash
 git add specs/{title}.md
