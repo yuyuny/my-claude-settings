@@ -18,6 +18,8 @@
 
 `/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
 
+`/gen-eva` — Chains `/generate` and `/evaluate` in one session. On FAIL, performs 1 rework cycle and re-evaluates. Escalates to user after 2 consecutive FAILs.
+
 `/brainstorm` is optional, not the default. If requirements are already clear in the main session, skip it and start with `/spec`.
 
 See each command file for detailed process (`.claude/commands/`)

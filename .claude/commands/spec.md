@@ -146,4 +146,8 @@ Run inside the worktree (the script auto-detects git root):
 - **Affected paths required**: List alternative execution paths for each major deliverable (missing this risks FAIL at implementation stage)
 - Add new domain terms to `docs/GLOSSARY.md` only if existing entries are present (skip if the file is empty)
 
+## Final Output
+After committing, output a single summary line with a clickable link:
+  **Spec committed** — [specs/{title}.md](.worktrees/{title}/specs/{title}.md)
+
 $ARGUMENTS

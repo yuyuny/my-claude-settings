@@ -19,6 +19,7 @@ After each command completes, the Stop hook (`.claude/scripts/workflow-advance.s
 | `spec_ready` | Review before finalizing spec content (block wrong assumptions) |
 | `evaluated_pass/fail` | Confirm merge or decide on rework/abandon |
 | Evaluator launch point | Manual start in a separate session (independence principle) |
+| `/gen-eva` 2nd FAIL | Automatic rework exhausted — human decides next step |
 
 The remaining transitions (brainstorm→spec, spec→generate, reflect→done) are automatically recommended by the hook.
 
@@ -33,6 +34,10 @@ idle → brainstorming → spec_draft → spec_ready → generating
                                                                            → evaluated_fail  (human decides: rework / redefine spec / abandon)
 
 # Without /brainstorm (run /spec directly): idle → spec_ready (brainstorming/spec_draft skipped)
+
+# /gen-eva shortcut (generate + evaluate + 1 rework in one session):
+# spec_ready → generating → handoff_ready → [evaluator sub-agent] → evaluated_pass → (human: /reflect)
+#                                                                  → evaluated_fail → generating (rework) → handoff_ready → [evaluator sub-agent] → evaluated_pass / evaluated_fail (escalate to human)
 ```
 
 - `brainstorming`: recorded immediately after `/brainstorm` Step 1 (title decided)

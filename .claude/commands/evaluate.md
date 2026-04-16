@@ -105,7 +105,7 @@ Save to `evaluation/{title}.md` inside the worktree (path: `.worktrees/{title}/e
 > Rubric: v1.0 (`../../evaluation/rubric-v1.md`)
 
 ## Deliverable Comparison
-<!-- Step 1 sub-agent writes directly. Main session receives only "N missing / M mismatches". -->
+<!-- Produced directly by the evaluator. -->
 | Deliverable | Spec criteria | Handoff status | Missing Y/N |
 |---|---|---|---|
 
@@ -150,5 +150,9 @@ Save to `evaluation/{title}.md` inside the worktree (path: `.worktrees/{title}/e
 On a PASS verdict, include the following merge command as text in the report (Evaluator does not run it directly — a human confirms and executes):
 
 `git checkout main && git merge {title} && git worktree remove .worktrees/{title} && git branch -d {title}`
+
+## Final Output
+After completing all steps, output a single summary line with a clickable link:
+  **Verdict: {PASS/FAIL}** — [evaluation/{title}.md](.worktrees/{title}/evaluation/{title}.md)
 
 $ARGUMENTS

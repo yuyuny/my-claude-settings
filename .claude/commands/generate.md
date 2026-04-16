@@ -170,4 +170,8 @@ After writing, record workflow state:
 - All work must be done inside `.worktrees/{title}` (no direct modification of the main branch)
 - Commits inside the worktree stack on the `{title}` branch → merge to main after Evaluator PASS
 
+## Final Output
+After writing the handoff, output a single summary line with a clickable link:
+  **Handoff ready** — [handoffs/{title}.md](.worktrees/{title}/handoffs/{title}.md)
+
 $ARGUMENTS

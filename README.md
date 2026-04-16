@@ -11,6 +11,7 @@ A Claude Code project template implementing a multi-agent workflow (Brainstormer
     spec.md            ← /spec (Spec Writer, sonnet)
     generate.md        ← /generate (Generator, sonnet)
     evaluate.md        ← /evaluate (Evaluator, opus, separate session)
+    gen-eva.md         ← /gen-eva (Generate→Evaluate orchestrator, sonnet+opus)
     reflect.md         ← /reflect (Reflector, sonnet)
     reflect-batch.md   ← /reflect-batch (pattern aggregation, sonnet)
     workflow-status.md ← /workflow-status (status query, read-only)
@@ -39,15 +40,16 @@ reflections/
 
 ## Model Assignment
 
-| Agent / Task           | Model  |
-|------------------------|--------|
-| Brainstormer           | opus   |
-| Spec Writer            | sonnet |
-| Generator — SCOPE      | sonnet |
-| Generator — IMPLEMENT  | sonnet |
-| Evaluator              | opus   |
-| Reflector              | sonnet |
-| Reflect-Batch          | sonnet |
+| Agent / Task                        | Model                              |
+|-------------------------------------|------------------------------------|
+| Brainstormer                        | opus                               |
+| Spec Writer                         | sonnet                             |
+| Generator — SCOPE                   | sonnet                             |
+| Generator — IMPLEMENT               | sonnet                             |
+| Evaluator                           | opus                               |
+| Gen-Eva Orchestrator                | sonnet + opus (evaluate sub-agent) |
+| Reflector                           | sonnet                             |
+| Reflect-Batch                       | sonnet                             |
 
 ## Usage
 
@@ -76,6 +78,14 @@ Generator works inside `.worktrees/{title}`:
 ```
 SCOPE(sonnet×parallel) → PLAN → IMPLEMENT(TDD) → REVIEW(/simplify) → VERIFY → HANDOFF
 ```
+
+### Step 2a: Implement + Evaluate in one shot (sonnet + opus)
+
+```bash
+claude "/gen-eva {title}"
+```
+
+Runs `/generate` then `/evaluate` automatically in one session. On FAIL, performs one rework and re-evaluates. Falls back to manual Steps 2+3 on context dump or 2nd FAIL.
 
 ### Step 3: Evaluate (opus, **must be in a new session**)
 
@@ -147,17 +157,17 @@ User request
 │                              │                      │
 │                           HANDOFF                   │
 └──────────────────────┬──────────────────────────────┘
-                       │ handoffs/{title}.md
-                       ▼
-            ┌──────────────────────────────┐
-            │ /evaluate (opus, new session!)│
-            │ Validate at: .worktrees/{title}│
-            │                              │
-            │ VERIFY re-validation         │
-            │ Code validation              │
-            │ Behavior validation          │
-            │ Scoring + verdict            │
-            └──────────┬───────────────────┘
+          │            │ handoffs/{title}.md
+          │            ▼
+          │ /gen-eva  ┌──────────────────────────────┐
+          │ (one      │ /evaluate (opus, new session!)│
+          │ session)  │ Validate at: .worktrees/{title}│
+          │           │                              │
+          └──────────▶│ VERIFY re-validation         │
+                      │ Code validation              │
+                      │ Behavior validation          │
+                      │ Scoring + verdict            │
+                      └──────────┬───────────────────┘
                        │
              ┌─────────┴─────────┐
              │                   │

@@ -104,4 +104,8 @@ Traps, unfinished threads, intentional decisions that look odd.}
 - No generalities: sentences like "code review is important" have no value
 - Maintain first-person perspective: Claude's diary, not a report
 
+## Final Output
+After recording state, output a single summary line with a clickable link:
+  **Reflection saved** — [reflections/YYYY-MM-DD-HHmm-{title}.md](.worktrees/{title}/reflections/YYYY-MM-DD-HHmm-{title}.md)
+
 $ARGUMENTS
