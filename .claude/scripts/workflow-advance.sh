@@ -226,12 +226,72 @@ EOF
 
   done)
     NOTIFY_MSG="$TITLE: 🎉 cycle complete — clean up worktree"
-    cat <<EOF
+
+    # Count unprocessed reflections since last reflect-batch
+    UNPROCESSED=$(python3 - "$_MAIN_ROOT" <<'PYEOF'
+import os, sys, re
+from datetime import datetime
+
+root = sys.argv[1]
+index_path = os.path.join(root, "reflections", "index.md")
+reflections_dir = os.path.join(root, "reflections")
+
+# Find last batch date from index.md
+last_batch = None
+if os.path.exists(index_path):
+    with open(index_path) as f:
+        content = f.read()
+    # Match "### YYYY-MM-DD Batch Aggregation" headers
+    matches = re.findall(r'###\s+(\d{4}-\d{2}-\d{2})\s+Batch Aggregation', content)
+    if matches:
+        last_batch = max(matches)
+
+# Count reflection files newer than last batch
+if not os.path.exists(reflections_dir):
+    print(0)
+    sys.exit(0)
+
+count = 0
+for fname in os.listdir(reflections_dir):
+    if fname == "index.md" or not fname.endswith(".md"):
+        continue
+    # Filename format: YYYY-MM-DD-HHmm-{title}.md
+    m = re.match(r'^(\d{4}-\d{2}-\d{2})', fname)
+    if not m:
+        continue
+    file_date = m.group(1)
+    if last_batch is None or file_date > last_batch:
+        count += 1
+
+print(count)
+PYEOF
+    )
+
+    if [[ "$UNPROCESSED" -ge 5 ]]; then
+      NEXT_CMD="claude \"/reflect-batch\""
+      NOTIFY_MSG="$TITLE: 🎉 done — ⚡ $UNPROCESSED reflections ready for /reflect-batch"
+      cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: done
 🎉 Full cycle complete (brainstorm → reflect).
-Reflection has been recorded in reflections/.
+
+⚡ $UNPROCESSED unprocessed reflections accumulated — run:
+  claude "/reflect-batch"   ← copied to clipboard
+
+After reflect-batch, clean up the worktree:
+  .claude/scripts/workflow-advance.sh merge $TITLE
+  .claude/scripts/workflow-advance.sh cleanup $TITLE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+    else
+      cat <<EOF
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[workflow] $TITLE — state: done
+🎉 Full cycle complete (brainstorm → reflect).
+Reflection has been recorded in reflections/. ($UNPROCESSED unprocessed total)
 
 If the worktree is still around, clean it up:
   .claude/scripts/workflow-advance.sh merge $TITLE    # (if not yet merged)
@@ -239,6 +299,7 @@ If the worktree is still around, clean it up:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
+    fi
     ;;
 
   *)

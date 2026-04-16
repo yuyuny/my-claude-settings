@@ -13,11 +13,11 @@ Running in the same session introduces self-bias from prior context, reducing ev
 ## Process
 
 ### Step 1: Spec vs Handoff Comparison
-Run as a sub-agent (1 sonnet):
-- Sub-agent instructions: read only the "## Deliverables" and "## Acceptance Criteria" sections of the spec, and the "## Completed Deliverables" section of the handoff — do not load entire files
-- Comparison results → write directly to the "## Deliverable Comparison" section of `.worktrees/{title}/evaluation/{title}.md` draft
-- Return format: `| Deliverable | Spec criteria | Handoff status | Missing Y/N |` table
-- Report only **"N missing / M mismatches"** to main session
+Read directly (no sub-agent needed — this is structured template filling):
+- Read only the "## Deliverables" and "## Acceptance Criteria" sections of `specs/{title}.md`
+- Read only the "## Completed Deliverables" section of `handoffs/{title}.md`
+- Produce the `| Deliverable | Spec criteria | Handoff status | Missing Y/N |` table directly
+- Write the table to the "## Deliverable Comparison" section of `.worktrees/{title}/evaluation/{title}.md`
 
 If spec or handoff must be referenced again in Steps 3 or 4, **Read only the needed sections with a line range** — do not reload entire files.
 

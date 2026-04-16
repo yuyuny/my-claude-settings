@@ -36,8 +36,17 @@ Record `generating` state immediately after workspace setup (including rework):
 ### Step 1: SCOPE — Parallel Exploration (sonnet × 2~3)
 Use parallel exploration agents to identify the scope of impact before implementing.
 
-**For rework**: First check the FAIL feedback in `evaluation/{title}.md`.
-If `handoffs/{title}.md` has previous SCOPE results and the feedback doesn't require exploring new files/modules, reuse SCOPE and skip this step.
+**Decision tree (check in order — stop at the first match):**
+
+1. **Rework after `evaluated_fail`**: Check `evaluation/{title}.md` FAIL feedback first.
+   - If feedback doesn't require exploring new files/modules → reuse SCOPE from `handoffs/{title}.md` and skip agents.
+   - If feedback points to new areas → run agents targeting only those areas.
+
+2. **Normal run — spec has full Affected Paths**: If `specs/{title}.md` "Affected Paths" already lists Primary + Alternative + Interconnected paths with specific file references, those are sufficient.
+   - Skip parallel SCOPE agents. Copy paths directly into Step 2 PLAN task breakdown.
+   - *(Paths are from the same branch — no risk of drift.)*
+
+3. **Normal run — spec Affected Paths are sparse or absent**: Run full parallel SCOPE.
 
 ```
 Launch parallel (sonnet):

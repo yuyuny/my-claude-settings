@@ -60,6 +60,18 @@ git commit -m "docs: add reflection for {title} session"
 ../../.claude/scripts/workflow-advance.sh record {title} done reflection reflections/$(date +%Y-%m-%d-%H%M)-{title}.md
 ```
 
+### Step 6: Merge & Cleanup (optional — confirm before running)
+
+If you are ready to merge this session's branch into main, run:
+
+```bash
+# From the worktree or main repo root:
+../../.claude/scripts/workflow-advance.sh merge {title}
+../../.claude/scripts/workflow-advance.sh cleanup {title}
+```
+
+> Only run if you intend to finalize this session. Omit if you want to inspect the worktree first.
+
 ## Output Format
 
 Save to `reflections/YYYY-MM-DD-HHmm-{title}.md`:
