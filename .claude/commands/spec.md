@@ -1,149 +1,149 @@
 # Spec Writer Agent (sonnet)
 
-브레인스토밍 산출물(`brainstorms/{title}.md`)을 읽고 정형 스펙 문서로 변환합니다.
-이 커맨드는 `sonnet` 모델로 실행합니다 — 정해진 템플릿 채우기와 딜리버블 정제가 목적입니다.
+Reads the brainstorming artifact (`brainstorms/{title}.md`) and converts it into a formal spec document.
+This command runs with the `sonnet` model — the goal is filling a defined template and refining deliverables.
 
-요구사항이 모호하다면 `/brainstorm` (opus) 을 먼저 실행하세요.
-요구사항이 이미 메인 세션에서 명확히 정의된 경우 `/brainstorm` 없이 바로 실행해도 됩니다.
+If requirements are ambiguous, run `/brainstorm` (opus) first.
+If requirements are already clearly defined in the main session, you can run this directly without `/brainstorm`.
 
-## 토큰 가드
+## Token Guard
 
-- `/brainstorm` 없이 실행 시: 확인 질문 최대 **2개**. 답변 받은 즉시 스펙 작성 시작 — 추가 질의 금지.
-- 스펙 작성 후 **즉시 커밋** — 추가 분석·확장 금지.
-- 산출물 목표: **≤ 60줄**. 초과 시 딜리버블 범위를 줄이거나 섹션을 압축.
+- Without `/brainstorm`: maximum **2** clarifying questions. Start writing the spec immediately after receiving answers — no further questions.
+- **Commit immediately** after writing the spec — no additional analysis or expansion.
+- Artifact target: **≤ 60 lines**. Reduce deliverable scope or compress sections if exceeded.
 
-## 프로세스
+## Process
 
-### Step 1: 입력 결정
+### Step 1: Determine Input
 
-- `brainstorms/{title}.md` 가 있으면 → 1차 입력으로 사용 (SCOPE 재실행 금지)
-- 없으면 → 메인 세션 컨텍스트를 1차 입력으로 사용. 짧은 확인 1~2개만 던지고 바로 작성
+- If `brainstorms/{title}.md` exists → use it as primary input (do not re-run SCOPE)
+- If not → use main session context as primary input. Ask 1~2 short clarifying questions and write immediately.
 
-### Step 1.5: 워크트리 생성
+### Step 1.5: Create Worktree
 
-`/spec`부터 모든 산출물(스펙, 핸드오프, 평가, 회고)은 워크트리 브랜치에서 관리합니다.
+All artifacts from `/spec` onward (spec, handoffs, evaluation, reflections) are managed in a worktree branch.
 
-**처음 실행 시:**
+**First run:**
 ```bash
 git worktree add .worktrees/{title} -b {title}
 ```
 
-**재작업 시나리오별 처리:**
+**Rework scenarios:**
 
-- **`evaluated_fail` 후 스펙 재정의**: 워크트리가 이미 존재하므로 `cd .worktrees/{title}`로 이동만 합니다. 기존 코드 위에 스펙만 갱신합니다. Generator가 이전 구현을 참고해 재작업할 수 있습니다.
-- **처음부터 다시 시작(브랜치 리셋)**: 명시적으로 요청된 경우에만 실행합니다.
+- **Spec redefinition after `evaluated_fail`**: The worktree already exists, so just `cd .worktrees/{title}`. Update only the spec on top of the existing code. Generator can reference the previous implementation for rework.
+- **Full restart (branch reset)**: Execute only if explicitly requested.
   ```bash
   git worktree remove .worktrees/{title}
   git branch -D {title}
   git worktree add .worktrees/{title} -b {title}
   ```
 
-**이후 모든 Step은 `.worktrees/{title}` 안에서 실행합니다.**
+**All subsequent steps run inside `.worktrees/{title}`.**
 
 ### Step 2: SCOPE
 
-- **brainstorms/{title}.md 있음**: "영향 받는 경로" 섹션을 스펙으로 **그대로 복사**. 탐색 에이전트 재실행 금지.
-- **없음**: 병렬 탐색 에이전트(sonnet × 2~3)로 영향 범위 파악.
+- **If brainstorms/{title}.md exists**: **Copy** the "Affected Paths" section directly into the spec. Do not re-run exploration agents.
+- **If not**: Use parallel exploration agents (sonnet × 2~3) to identify the scope of impact.
 
   ```
   Launch parallel (sonnet):
-    1. 관련 파일/모듈 구조 탐색 → `경로/파일 — 이유`
-    2. 기존 패턴/컨벤션 확인   → `경로/파일 — 어떤 패턴`
-    3. 의존성/영향 범위 분석   → `경로/파일 — 영향 방향`
+    1. Explore related files/module structure → `path/file — reason`
+    2. Check existing patterns/conventions   → `path/file — which pattern`
+    3. Analyze dependencies/impact scope     → `path/file — impact direction`
   ```
 
-### Step 3: 세션 제목 확정
+### Step 3: Finalize Session Title
 
-- brainstorms/{title}.md 가 있으면 그 제목을 그대로 사용
-- 없으면 kebab-case 제목을 결정 (`auth-login`, `dashboard-charts` 등)
+- If brainstorms/{title}.md exists, use its title as-is.
+- If not, decide a kebab-case title (`auth-login`, `dashboard-charts`, etc.)
 
-### Step 4: 스펙 작성
+### Step 4: Write Spec
 
-`specs/{title}.md` 파일을 아래 출력 형식으로 생성합니다.
+Create `specs/{title}.md` using the output format below.
 
-**딜리버블 중심으로 작성** — 구현 세부사항(어떤 함수, 어떤 패턴)은 Generator의 몫입니다.
-Spec Writer가 구현 방법을 지정하면 오류가 전파(cascade)될 위험이 있습니다.
+**Write around deliverables** — implementation details (which function, which pattern) are for Generator.
+If Spec Writer specifies implementation methods, errors can cascade.
 
-### Step 5: 스프린트 계약
+### Step 5: Sprint Contract
 
-각 스프린트마다 "완료 기준(Definition of Done)"을 명확히 정의합니다.
-이 기준은 나중에 Evaluator가 동일하게 사용합니다.
+Define a clear "Definition of Done" for each sprint.
+This criteria will be used identically by the Evaluator later.
 
-**검증 기준도 반드시 포함**: 빌드, 테스트, 타입체크, 린트 통과 여부.
+**Also include verification criteria**: whether build, tests, typecheck, and lint pass.
 
-### Step 6: 스펙 커밋
+### Step 6: Commit Spec
 
-`.worktrees/{title}` 안에서 실행합니다:
+Run inside `.worktrees/{title}`:
 
 ```bash
 git add specs/{title}.md
 git commit -m "docs: add spec for {title}"
 ```
 
-**주의**: `specs/{title}.md`만 스테이징합니다. 다른 변경 사항은 커밋하지 않습니다.
+**Note**: Stage only `specs/{title}.md`. Do not commit any other changes.
 
-### Step 7: 워크플로우 상태 기록
+### Step 7: Record Workflow State
 
-워크트리 안에서 실행 (스크립트가 git root를 자동 탐지):
+Run inside the worktree (the script auto-detects git root):
 
 ```bash
 ../../.claude/scripts/workflow-advance.sh record {title} spec_ready spec specs/{title}.md
 ```
 
-## 출력 형식
+## Output Format
 
 ```markdown
-# Spec: {세션 제목}
+# Spec: {session title}
 
-## 목표
+## Goal
 
-{1-2문장 요약}
+{1-2 sentence summary}
 
-## 딜리버블
+## Deliverables
 
-- [ ] 딜리버블 1: {사용자 관점에서 설명}
-- [ ] 딜리버블 2: ...
+- [ ] Deliverable 1: {described from the user's perspective}
+- [ ] Deliverable 2: ...
 
-## 완료 기준 (Evaluator와 공유)
+## Acceptance Criteria (shared with Evaluator)
 
-1. {구체적이고 검증 가능한 조건}
-2. {예: "플레이어 입력 후 1프레임 내 반응"}
-3. {예: "모든 엔트리 포인트에 에러 핸들링 존재"}
+1. {concrete, verifiable condition}
+2. {e.g., "Response within 1 frame after player input"}
+3. {e.g., "Error handling exists at all entry points"}
 
-## 검증 기준 (VERIFY)
+## Verification Criteria (VERIFY)
 
-> `.claude/rules/verify-commands.md`에 정의된 게이트를 기준으로 합니다.
+> Based on the gates defined in `.claude/rules/verify-commands.md`.
 
-- [ ] {게이트 1 — 예: 테스트 전체 통과}
-- [ ] {게이트 2 — 예: 빌드 통과}
-- [ ] {해당하는 게이트만 포함}
+- [ ] {gate 1 — e.g., all tests pass}
+- [ ] {gate 2 — e.g., build passes}
+- [ ] {include only applicable gates}
 
-## 영향 받는 경로
+## Affected Paths
 
-- 주 경로: {기능의 표준 실행 경로. 예: 주 엔트리 함수 → 핵심 처리기 → 저장소}
-- 대체 경로: {주 경로 외 동일 결과를 내는 우회·특수 분기. 예: 특정 조건에서 표준 파이프라인을 건너뛰는 단축 경로}
-- 연동 시스템: {함께 업데이트해야 할 사이드 시스템. 예: 로깅/분석, 국제화(있다면), 문서, 외부 카탈로그}
+- Primary path: {the standard execution path for the feature. e.g., main entry function → core handler → repository}
+- Alternative paths: {non-primary paths yielding the same result — bypasses or special branches. e.g., a shortcut that skips the standard pipeline under certain conditions}
+- Interconnected systems: {side systems that must also be updated. e.g., logging/analytics, i18n (if any), docs, external catalogs}
 
-## 기술 제약
+## Technical Constraints
 
-- {스택, 호환성, 성능 요구사항 등}
+- {stack, compatibility, performance requirements, etc.}
 
-## 비기능 요구사항
+## Non-functional Requirements
 
-- {접근성, 보안, 성능 임계값 등}
+- {accessibility, security, performance thresholds, etc.}
 
-## 의존성
+## Dependencies
 
-- 선행 세션: {없음 또는 이전 세션 제목}
+- Preceding session: {none or previous session title}
 ```
 
-## 규칙
+## Rules
 
-- 스프린트당 딜리버블은 3~7개
-- 완료 기준은 주관적 표현 금지 ("좋은 UX" X → "버튼 클릭 후 1초 내 피드백" O)
-- 이전 세션의 evaluation/{title}.md가 있으면 반드시 반영
-- 범위 확장 제안 가능: 사용자 목표에 부합하는 추가 기능이 있으면 딜리버블에 포함을 제안하되, 사용자 승인 없이 최종 스펙에 포함하지 않음
-- **영향 받는 경로 필수**: 주요 딜리버블마다 대체 실행 경로를 나열 (누락 시 구현 단계 FAIL 위험)
-- `docs/GLOSSARY.md`에 기존 항목이 있는 경우에만 새 도메인 용어 추가 (빈 파일이면 생략)
+- 3~7 deliverables per sprint
+- No subjective language in acceptance criteria ("good UX" ✗ → "feedback within 1 second of button click" ✓)
+- If a previous session's `evaluation/{title}.md` exists, it must be reflected
+- Scope expansion proposals allowed: if there are additional features aligned with user goals, propose including them in deliverables, but do not add to the final spec without user approval
+- **Affected paths required**: List alternative execution paths for each major deliverable (missing this risks FAIL at implementation stage)
+- Add new domain terms to `docs/GLOSSARY.md` only if existing entries are present (skip if the file is empty)
 
 $ARGUMENTS

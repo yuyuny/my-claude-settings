@@ -1,32 +1,32 @@
 # Workflow Status
 
-현재 진행 중인 모든 세션의 상태를 조회합니다.
-새 세션을 열었을 때 컨텍스트를 즉시 복원하는 용도입니다.
+Queries the status of all active sessions.
+Used to instantly restore context when opening a new session.
 
-## 프로세스
+## Process
 
-### Step 1: 상태 파일 스캔
+### Step 1: Scan State Files
 
 ```bash
 python3 .claude/scripts/workflow-status.py
 ```
 
-### Step 2: git 컨텍스트 보조
+### Step 2: Git Context Supplement
 
 ```bash
-# 활성 워크트리 목록
+# List active worktrees
 git worktree list 2>/dev/null | grep -v "$(cd "$(git rev-parse --git-common-dir)/.." && pwd)" || true
 ```
 
-### Step 3: 다음 액션 안내
+### Step 3: Next Action Guidance
 
-Step 1 출력에서 `[승인 게이트]` 표시가 있는 세션은 사람의 결정이 필요합니다.
-나머지는 안내된 커맨드를 그대로 실행하면 됩니다.
+Sessions marked with `[approval gate]` in the Step 1 output require a human decision.
+For the rest, you can proceed directly with the suggested command.
 
-## 규칙
+## Rules
 
-- 이 커맨드는 읽기 전용입니다. 상태 파일을 수정하지 않습니다.
-- 상태 파일이 없어도 오류 없이 종료합니다.
-- 진행 중인 세션이 많을 경우 가장 최근 수정 순서로 표시됩니다.
+- This command is read-only. It does not modify state files.
+- Exits cleanly even if no state files exist.
+- When there are many active sessions, displays in order of most recently modified.
 
 $ARGUMENTS

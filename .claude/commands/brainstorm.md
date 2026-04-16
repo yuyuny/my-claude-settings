@@ -1,99 +1,99 @@
 # Brainstormer Agent (opus)
 
-사용자 요청을 소크라틱 대화와 코드 탐색으로 정제해 구조화된 브레인스토밍 산출물을 만듭니다.
-이 커맨드는 `opus` 모델로 실행합니다 — 발산적 사고, 트레이드오프 탐색, 모호한 요구사항 정제가 목적입니다.
+Refines user requests through Socratic dialogue and code exploration to produce a structured brainstorming artifact.
+This command runs with the `opus` model — the goal is divergent thinking, trade-off exploration, and refining ambiguous requirements.
 
-스펙 문서 작성은 `/spec` (sonnet) 에서 합니다. 이 커맨드는 `/spec`의 입력을 만드는 단계입니다.
+Spec document writing happens in `/spec` (sonnet). This command produces the input for `/spec`.
 
-## 토큰 가드
+## Token Guard
 
-- 질문 라운드 최대 **3회** (라운드당 최대 3개 질문). 사용자가 더 원하면 명시적으로 요청해야 함
-- `brainstorms/{title}.md` 작성 후 **즉시 종료** — 추가 분석·확장 금지
-- 산출물 목표: **≤ 80줄, ≤ 1500 토큰**. 초과 시 자가 압축 후 커밋
+- Maximum **3** question rounds (up to 3 questions per round). User must explicitly request more.
+- Write `brainstorms/{title}.md` and **terminate immediately** — no additional analysis or expansion.
+- Artifact target: **≤ 80 lines, ≤ 1500 tokens**. Self-compress and commit if exceeded.
 
-## 프로세스
+## Process
 
-### Step 1: 세션 제목 결정
+### Step 1: Determine Session Title
 
-kebab-case 제목을 먼저 결정합니다.
+Decide on a kebab-case title first.
 
-- 좋은 예: `auth-login`, `dashboard-charts`, `payment-stripe`
-- 나쁜 예: `sprint-1`, `feature-a`, `misc-fixes`
+- Good: `auth-login`, `dashboard-charts`, `payment-stripe`
+- Bad: `sprint-1`, `feature-a`, `misc-fixes`
 
-제목 결정 직후 `brainstorming` 상태를 기록합니다:
+Immediately after deciding the title, record `brainstorming` state:
 
 ```bash
 .claude/scripts/workflow-advance.sh record {title} brainstorming
 ```
 
-### Step 2: 병렬 SCOPE (sonnet × 2~3)
+### Step 2: Parallel SCOPE (sonnet × 2~3)
 
-기존 코드베이스가 있는 경우 병렬 탐색 에이전트로 영향 범위를 파악합니다.
+If an existing codebase is present, use parallel exploration agents to identify the scope of impact.
 
 ```
 Launch parallel (sonnet):
-  1. 관련 파일/모듈 구조 탐색 → `경로/파일 — 이유`
-  2. 기존 패턴/컨벤션 확인   → `경로/파일 — 어떤 패턴`
-  3. 의존성/영향 범위 분석   → `경로/파일 — 영향 방향`
+  1. Explore related files/module structure → `path/file — reason`
+  2. Check existing patterns/conventions   → `path/file — which pattern`
+  3. Analyze dependencies/impact scope     → `path/file — impact direction`
 ```
 
-SCOPE 결과는 Step 3 질의에서 코드 근거로 인용합니다.
+SCOPE results are cited as code evidence in Step 3 questions.
 
-### Step 3: 소크라틱 질의응답
+### Step 3: Socratic Q&A
 
-사용자와 대화하며 요구사항을 정제합니다.
+Converse with the user to refine requirements.
 
-- "이 기능의 최종 사용자는 누구인가?"
-- "성공을 어떻게 측정할 것인가?"
-- "반드시 포함해야 할 것과 제외할 것은?"
-- "기술 스택에 제약이 있는가?"
+- "Who is the end user of this feature?"
+- "How will success be measured?"
+- "What must be included, and what should be excluded?"
+- "Are there any technical stack constraints?"
 
-코드베이스가 있다면 SCOPE 결과를 인용해 구체적으로 질문합니다.
-질문은 한 번에 최대 3개. 충분한 컨텍스트가 모이면 Step 4로 넘어갑니다.
+If a codebase exists, ask specific questions citing SCOPE results.
+Maximum 3 questions at a time. Move to Step 4 once enough context is gathered.
 
-### Step 4: brainstorms/{title}.md 작성
+### Step 4: Write brainstorms/{title}.md
 
-아래 형식으로 작성합니다. **산문 금지 — bullet 위주**.
+Write in the format below. **No prose — bullets only**.
 
 ```markdown
 # Brainstorm: {title}
 
-## 사용자 의도 (1-2문장)
-{무엇을, 왜}
+## User Intent (1-2 sentences)
+{what and why}
 
-## 핵심 결정사항
-- {결정 1 — 근거}
-- {결정 2 — 근거}
+## Key Decisions
+- {decision 1 — rationale}
+- {decision 2 — rationale}
 
-## 명시적 비목표
-- {제외하기로 한 것}
+## Explicit Non-Goals
+- {what was decided to exclude}
 
-## 영향 받는 경로 (SCOPE 결과)
-- 주 경로:
-  - `path/to/file` — 이유
-- 대체 경로:
-  - `path/to/file` — 이유
-- 연동 시스템:
-  - `path/to/file` — 이유
+## Affected Paths (SCOPE results)
+- Primary paths:
+  - `path/to/file` — reason
+- Alternative paths:
+  - `path/to/file` — reason
+- Interconnected systems:
+  - `path/to/file` — reason
 
-## 열린 질문 (구현 중 결정)
-- {질문}
+## Open Questions (to be decided during implementation)
+- {question}
 
-## 제안 딜리버블 (초안 — /spec이 정제)
-- {딜리버블 1}
-- {딜리버블 2}
+## Proposed Deliverables (draft — /spec will refine)
+- {deliverable 1}
+- {deliverable 2}
 ```
 
-### Step 5: 커밋
+### Step 5: Commit
 
 ```bash
 git add brainstorms/{title}.md
 git commit -m "docs: brainstorm for {title}"
 ```
 
-`brainstorms/{title}.md`만 스테이징합니다. 다른 변경 사항은 커밋하지 않습니다.
+Stage only `brainstorms/{title}.md`. Do not commit any other changes.
 
-### Step 6: 워크플로우 상태 기록
+### Step 6: Record Workflow State
 
 ```bash
 .claude/scripts/workflow-advance.sh record {title} spec_draft brainstorm brainstorms/{title}.md

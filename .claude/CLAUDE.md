@@ -1,31 +1,31 @@
 # CLAUDE.md
 
-이 저장소는 Claude Code 멀티에이전트 워크플로우 템플릿입니다.
+This repository is a Claude Code multi-agent workflow template.
 
-## 워크플로우 개요
+## Workflow Overview
 
-`/brainstorm` (선택) → `/spec` → `/generate` → `/evaluate` (별도 세션) → `/reflect`
+`/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
 
-핵심 규칙: `.claude/rules/multi-agent-workflow.md`
+Core rules: `.claude/rules/multi-agent-workflow.md`
 
-## 새 프로젝트 적용 시 수정 필요 파일
+## Files to Modify When Applying to a New Project
 
-1. `.claude/rules/verify-commands.md` — 현재 프로젝트 게이트 섹션을 스택에 맞게 교체
-2. `evaluation/rubric-v1.md` — 프로젝트 유형(UI/CLI/인프라)에 맞는 가중치 프로필 확인
-3. `.claude/settings.local.json` — 프로젝트에서 사용하는 CLI 권한 추가
-4. `.claude/settings.json` — `"model"` 설정 확인 (기본값: `opusplan`)
+1. `.claude/rules/verify-commands.md` — Replace the current project gate section to match your stack
+2. `evaluation/rubric-v1.md` — Check the weight profile for your project type (UI/CLI/infrastructure)
+3. `.claude/settings.local.json` — Add CLI permissions used by your project
+4. `.claude/settings.json` — Verify the `"model"` setting (default: `opusplan`)
 
-## 기본 동작
+## Default Behavior
 
-- **기본 모드**: `plan` (settings.json) — 구현 시 ask/auto 모드로 전환 필요
-- **Stop hook**: 각 커맨드 완료 후 다음 단계를 자동 안내 (클립보드 복사 + 알림)
+- **Default mode**: `plan` (settings.json) — switch to ask/auto mode when implementing
+- **Stop hook**: Automatically guides the next step after each command completes (clipboard copy + notification)
 
-## 세션 상태 확인
+## Check Session Status
 
 ```
 /workflow-status
 ```
 
-## 스택별 게이트 예시
+## Gate Examples by Stack
 
-`.claude/docs/verify-commands-examples.md` 참조
+See `.claude/docs/verify-commands-examples.md`

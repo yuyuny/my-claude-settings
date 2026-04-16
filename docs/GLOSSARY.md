@@ -1,8 +1,8 @@
-# 도메인 용어 사전
+# Domain Glossary
 
-> 새 스펙 작성 시 처음 등장하는 용어는 이 파일에 추가합니다.
-> `/reflect` 실행 시 새 용어가 있으면 해당 섹션에 추가.
+> Add terms that appear for the first time when writing a new spec.
+> When running `/reflect`, add any new terms to the relevant section.
 >
-> 형식: `**용어**: 설명. \`관련 파일\``
+> Format: `**term**: description. \`related file\``
 
 ---

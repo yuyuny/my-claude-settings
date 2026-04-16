@@ -1,49 +1,49 @@
-# Verify Commands — 스택별 예시
+# Verify Commands — Stack Examples
 
-> 이 파일은 참고용입니다. 실제 게이트는 `verify-commands.md`의 **현재 프로젝트 게이트** 섹션에만 정의합니다.
-> 새 프로젝트 세팅 시 아래에서 해당 스택 예시를 복사해 `verify-commands.md`에 붙여넣으세요.
+> This file is for reference only. Actual gates are defined solely in the **Current Project Gates** section of `verify-commands.md`.
+> When setting up a new project, copy the appropriate stack example below into `verify-commands.md`.
 
 ---
 
 ## Node / pnpm
 
 ```bash
-pnpm test:run   # 테스트 (vitest / jest)
-pnpm typecheck  # 타입 체크 (tsc --noEmit)
-pnpm lint       # 린트 (eslint / oxlint)
-pnpm build      # 빌드 (해당 시)
+pnpm test:run   # tests (vitest / jest)
+pnpm typecheck  # type check (tsc --noEmit)
+pnpm lint       # lint (eslint / oxlint)
+pnpm build      # build (if applicable)
 ```
 
 ## Python
 
 ```bash
-poetry run pytest           # 테스트
-poetry run mypy src/        # 타입 체크
-poetry run ruff check .     # 린트
-python -m build             # 패키지 빌드 (해당 시)
+poetry run pytest           # tests
+poetry run mypy src/        # type check
+poetry run ruff check .     # lint
+python -m build             # package build (if applicable)
 ```
 
 ## Go
 
 ```bash
-go test ./...       # 테스트
-go vet ./...        # 정적 분석
-golangci-lint run   # 린트 (설치 시)
-go build ./...      # 빌드
+go test ./...       # tests
+go vet ./...        # static analysis
+golangci-lint run   # lint (if installed)
+go build ./...      # build
 ```
 
 ## Rust
 
 ```bash
-cargo test          # 테스트
-cargo clippy        # 린트
-cargo build         # 빌드
+cargo test          # tests
+cargo clippy        # lint
+cargo build         # build
 ```
 
 ## Unity (C#)
 
 ```bash
-# Unity 배치 모드 테스트 (프로젝트 경로 조정 필요)
+# Unity batch mode tests (adjust project path as needed)
 /Applications/Unity/Hub/Editor/{version}/Unity.app/Contents/MacOS/Unity \
   -batchmode -runTests -testPlatform EditMode \
   -projectPath . -testResults test-results.xml -logFile -
@@ -52,7 +52,7 @@ cargo build         # 빌드
 ## Unreal Engine
 
 ```bash
-# UAT 테스트 (엔진 경로 조정 필요)
+# UAT tests (adjust engine path as needed)
 {UE_ROOT}/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
   -project="{project}.uproject" -noP4 -platform=Win64 \
   -clientconfig=Development -build -cook -stage

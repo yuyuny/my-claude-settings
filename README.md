@@ -1,45 +1,45 @@
 # my-claude-settings
 
-멀티에이전트 워크플로우(Brainstormer → Spec Writer → Generator → Evaluator → Reflector)를 구현한 Claude Code 프로젝트 템플릿입니다.
+A Claude Code project template implementing a multi-agent workflow (Brainstormer → Spec Writer → Generator → Evaluator → Reflector).
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 .claude/
   commands/
-    brainstorm.md      ← /brainstorm (Brainstormer, opus, 선택)
+    brainstorm.md      ← /brainstorm (Brainstormer, opus, optional)
     spec.md            ← /spec (Spec Writer, sonnet)
     generate.md        ← /generate (Generator, sonnet)
-    evaluate.md        ← /evaluate (Evaluator, opus, 별도 세션)
+    evaluate.md        ← /evaluate (Evaluator, opus, separate session)
     reflect.md         ← /reflect (Reflector, sonnet)
-    reflect-batch.md   ← /reflect-batch (패턴 집계, sonnet)
-    workflow-status.md ← /workflow-status (상태 조회, 읽기 전용)
+    reflect-batch.md   ← /reflect-batch (pattern aggregation, sonnet)
+    workflow-status.md ← /workflow-status (status query, read-only)
   rules/
-    multi-agent-workflow.md  ← 핵심 워크플로우 규칙 (모델 배정, 핵심 규칙, 출력 계약)
-    verify-commands.md       ← 검증 게이트 정의 (프로젝트마다 수정)
+    multi-agent-workflow.md  ← core workflow rules (model assignment, core rules, output contract)
+    verify-commands.md       ← verification gate definitions (modify per project)
   docs/
-    workflow-reference.md    ← 상태 머신, 디렉토리, 세미-자동화 상세
+    workflow-reference.md    ← state machine, directory, semi-automation details
   scripts/
-    workflow-advance.sh      ← Stop hook + 상태 기록 + merge/cleanup
-    workflow-status.py       ← /workflow-status 스크립트
-.worktrees/            ← 세션별 git worktree (.gitignore)
-  {title}/             ← 예: .worktrees/auth-login/
-    specs/             ← Spec Writer 산출물
-    handoffs/          ← Generator → Evaluator 컨텍스트
-    evaluation/        ← Evaluator 보고서
-    reflections/       ← 세션 회고
-brainstorms/           ← /brainstorm 산출물 (메인 브랜치)
+    workflow-advance.sh      ← Stop hook + state recorder + merge/cleanup
+    workflow-status.py       ← /workflow-status script
+.worktrees/            ← per-session git worktrees (.gitignore)
+  {title}/             ← e.g., .worktrees/auth-login/
+    specs/             ← Spec Writer artifacts
+    handoffs/          ← Generator → Evaluator context
+    evaluation/        ← Evaluator reports
+    reflections/       ← session reflections
+brainstorms/           ← /brainstorm artifacts (main branch)
 docs/
-  GLOSSARY.md          ← 도메인 용어 사전 (항목이 있을 때만 사용)
+  GLOSSARY.md          ← domain glossary (used only when entries exist)
 evaluation/
-  rubric-v1.md         ← 평가 루브릭
+  rubric-v1.md         ← evaluation rubric
 reflections/
-  index.md             ← 회고 인덱스 + 배치 집계 기록
+  index.md             ← reflection index + batch aggregation records
 ```
 
-## 모델 배정
+## Model Assignment
 
-| 에이전트 / 작업        | 모델   |
+| Agent / Task           | Model  |
 |------------------------|--------|
 | Brainstormer           | opus   |
 | Spec Writer            | sonnet |
@@ -49,66 +49,66 @@ reflections/
 | Reflector              | sonnet |
 | Reflect-Batch          | sonnet |
 
-## 사용법
+## Usage
 
-### 0단계: (선택) 브레인스토밍 (opus)
+### Step 0: (Optional) Brainstorming (opus)
 
-요구사항이 모호할 때 먼저 실행합니다.
+Run this first when requirements are ambiguous.
 
 ```bash
 claude "/brainstorm {title}"
 ```
 
-### 1단계: 스펙 작성 (sonnet)
+### Step 1: Write Spec (sonnet)
 
 ```bash
 claude "/spec {title}"
 ```
 
-### 2단계: 구현 (sonnet)
+### Step 2: Implement (sonnet)
 
 ```bash
 claude "/generate {title}"
 ```
 
-Generator가 `.worktrees/{title}` 안에서 작업합니다:
+Generator works inside `.worktrees/{title}`:
 
 ```
-SCOPE(sonnet×병렬) → PLAN → IMPLEMENT(TDD) → REVIEW(/simplify) → VERIFY → HANDOFF
+SCOPE(sonnet×parallel) → PLAN → IMPLEMENT(TDD) → REVIEW(/simplify) → VERIFY → HANDOFF
 ```
 
-### 3단계: 평가 (opus, **반드시 새 세션에서**)
+### Step 3: Evaluate (opus, **must be in a new session**)
 
 ```bash
-# 새 터미널/세션에서 실행 — Evaluator 독립성 원칙
+# Run in a new terminal/session — Evaluator independence principle
 claude "/evaluate {title}"
 ```
 
-### 4단계: 회고 + 머지
+### Step 4: Reflect + Merge
 
-PASS 판정 후 순서를 지켜 진행합니다:
+After a PASS verdict, follow this order:
 
 ```bash
-# ① 회고 먼저 (worktree 안 산출물 참조 필요)
+# ① Reflect first (needs access to worktree artifacts)
 claude "/reflect {title}"
 
-# ② 회고 완료 후 머지 (프로젝트 루트에서 실행)
+# ② Merge after reflection completes (run from project root)
 git checkout main && git merge {title}
 git worktree remove .worktrees/{title} && git branch -d {title}
 ```
 
-> **주의**: `/reflect` 전에 worktree를 삭제하면 산출물을 참조할 수 없습니다.
+> **Warning**: Deleting the worktree before `/reflect` makes artifacts inaccessible.
 
-### 재작업 (FAIL 시)
+### Rework (on FAIL)
 
 ```bash
-# evaluation/{title}.md 피드백 반영해 재작업
+# Apply evaluation/{title}.md feedback and rework
 claude "/generate {title}"
 ```
 
-기존 `.worktrees/{title}` 에서 이어서 작업합니다.
+Continues work in the existing `.worktrees/{title}`.
 
-### 상태 확인
+### Check Status
 
 ```bash
 claude "/workflow-status"
@@ -116,100 +116,100 @@ claude "/workflow-status"
 
 ---
 
-## 워크플로우 다이어그램
+## Workflow Diagram
 
 ```
-사용자 요청
+User request
     │
     ▼
 ┌─────────────────────┐
-│ /brainstorm (opus)  │  brainstorms/{title}.md  [선택]
-│ 소크라틱 대화        │─────────────────────────────┐
+│ /brainstorm (opus)  │  brainstorms/{title}.md  [optional]
+│ Socratic dialogue   │─────────────────────────────┐
 └─────────────────────┘                             │
-    │ (또는 바로 /spec)                              │
+    │ (or go directly to /spec)                     │
     ▼                                              ▼
 ┌─────────────────────────────────────────────────────┐
 │ /spec (sonnet)                                      │
-│ 워크트리 생성: .worktrees/{title}                    │
-│ SCOPE → specs/{title}.md 작성 → 커밋               │
+│ Create worktree: .worktrees/{title}                 │
+│ SCOPE → write specs/{title}.md → commit             │
 └─────────────────────────────────────────────────────┘
     │
-    ▼  [승인 게이트: spec 검토]
+    ▼  [approval gate: spec review]
 ┌─────────────────────────────────────────────────────┐
 │ /generate (sonnet)                                  │
-│ 작업 공간: .worktrees/{title}                       │
+│ Workspace: .worktrees/{title}                       │
 │                                                     │
 │  SCOPE(sonnet×2~3) → PLAN → IMPLEMENT(TDD)         │
 │                              │                      │
 │                           REVIEW(/simplify, opus)   │
 │                              │                      │
-│                           VERIFY ──✗──→ 수정        │
+│                           VERIFY ──✗──→ fix         │
 │                              │                      │
 │                           HANDOFF                   │
 └──────────────────────┬──────────────────────────────┘
                        │ handoffs/{title}.md
                        ▼
             ┌──────────────────────────────┐
-            │ /evaluate (opus, 새 세션!)    │
-            │ 검증 위치: .worktrees/{title} │
+            │ /evaluate (opus, new session!)│
+            │ Validate at: .worktrees/{title}│
             │                              │
-            │ VERIFY 재검증                 │
-            │ 코드 검증                     │
-            │ 동작 검증                     │
-            │ 채점 + 판정                   │
+            │ VERIFY re-validation         │
+            │ Code validation              │
+            │ Behavior validation          │
+            │ Scoring + verdict            │
             └──────────┬───────────────────┘
                        │
              ┌─────────┴─────────┐
              │                   │
            PASS               FAIL
              │                   │
-    [승인 게이트]         evaluation/{title}.md
+    [approval gate]       evaluation/{title}.md
              │                   │
-      ① /reflect            /generate 재작업
-      ② git merge           (기존 worktree 유지)
-      ③ worktree 정리
+      ① /reflect            /generate rework
+      ② git merge           (existing worktree preserved)
+      ③ worktree cleanup
              │
       /reflect-batch
-      (5회 이상 누적 시)
+      (when 5+ accumulated)
 ```
 
 ---
 
-## 세미-자동화 (Stop hook)
+## Semi-automation (Stop Hook)
 
-각 커맨드가 끝나면 Stop hook이 자동으로:
-- 다음 명령어를 **클립보드에 복사** (macOS)
-- **데스크톱 알림** 발송 (macOS)
-- **Claude 세션에 안내 메시지 주입**
+After each command completes, the Stop hook automatically:
+- **Copies the next command to clipboard** (macOS)
+- **Sends a desktop notification** (macOS)
+- **Injects a guidance message into the Claude session**
 
-사람이 개입해야 하는 **승인 게이트 3곳**:
+**3 approval gates** requiring human intervention:
 
-| 상태 | 이유 |
+| State | Reason |
 |------|------|
-| `spec_ready` | spec 내용 확정 전 검토 |
-| `evaluated_pass` | 머지 확인 |
-| `evaluated_fail` | 재작업/스펙재정의/포기 결정 |
+| `spec_ready` | Review before finalizing spec |
+| `evaluated_pass` | Confirm merge |
+| `evaluated_fail` | Decide: rework / redefine spec / abandon |
 
 ---
 
-## 기존 규칙과의 통합 요약
+## Integration Summary with Existing Rules
 
-| 기존 규칙 | 하네스 내 위치 |
+| Existing rule | Location in harness |
 |-----------|----------------|
-| SCOPE (병렬 탐색) | /brainstorm Step 2 + /spec Step 2 + /generate Step 1 |
+| SCOPE (parallel exploration) | /brainstorm Step 2 + /spec Step 2 + /generate Step 1 |
 | PLAN | specs/{title}.md + handoffs/{title}.md |
 | IMPLEMENT (TDD) | /generate Step 3 |
 | REVIEW (/simplify) | /generate Step 4 |
-| VERIFY (test+typecheck+lint) | /generate Step 5 + /evaluate Step 2 (재검증) |
+| VERIFY (test+typecheck+lint) | /generate Step 5 + /evaluate Step 2 (re-validation) |
 | HANDOFF | /generate Step 6 |
-| REFLECT | /reflect 커맨드 (사이클 종료 후) |
+| REFLECT | /reflect command (after cycle ends) |
 
 ---
 
-## 빠른 설정
+## Quick Setup
 
-1. 이 저장소를 프로젝트에 복사합니다
-2. `.claude/rules/verify-commands.md`의 **현재 프로젝트 게이트** 섹션을 프로젝트 스택에 맞게 수정합니다
-3. `.claude/settings.local.json`에서 필요한 권한(pnpm, python3 등)을 추가합니다
-4. `evaluation/rubric-v1.md`를 프로젝트 유형(UI/CLI/라이브러리)에 맞게 검토합니다
-5. `.claude/settings.json`의 `"model"` 설정을 확인합니다 (기본값: `opusplan`)
+1. Copy this repository into your project
+2. Modify the **Current Project Gates** section in `.claude/rules/verify-commands.md` to match your stack
+3. Add required permissions (pnpm, python3, etc.) in `.claude/settings.local.json`
+4. Review `evaluation/rubric-v1.md` for your project type (UI/CLI/library)
+5. Verify the `"model"` setting in `.claude/settings.json` (default: `opusplan`)

@@ -1,63 +1,63 @@
 # Evaluation Rubric v1.0
 
-**적용 시작**: 2026-03-07
-**최종 수정**: 2026-04-14
+**Applied from**: 2026-03-07
+**Last modified**: 2026-04-14
 
-> 루브릭 변경 시 버전을 올리고(v1.1, v2.0 등) 변경 이유를 기록합니다.
-> 모든 `evaluation/{title}.md` 파일 상단에 사용 루브릭 버전을 명시합니다.
+> When changing the rubric, increment the version (v1.1, v2.0, etc.) and record the reason for the change.
+> State the rubric version used at the top of every `evaluation/{title}.md` file.
 
 ---
 
-## 채점 기준
+## Scoring Criteria
 
-| 기준 | 가중치 | 설명 |
+| Criteria | Weight | Description |
 |------|--------|------|
-| **기능 완성도** | 30% | `specs/{title}.md`의 완료 기준 충족 여부. 모든 딜리버블 체크, 대체 경로 포함. |
-| **코드 품질** | 25% | 구조, 가독성, 유지보수성, 테스트 커버리지. REVIEW 로그 실행 여부 포함. |
-| **설계/UX** | 25% | (해당 시) 사용성, 시각적 완성도, 반응성, 국제화·접근성 완결성. |
-| **엣지 케이스** | 20% | 예외 처리, 대체 코드 경로 커버, 입력 검증, 오류 복구. |
+| **Feature completeness** | 30% | Whether the acceptance criteria in `specs/{title}.md` are met. Check all deliverables including alternative paths. |
+| **Code quality** | 25% | Structure, readability, maintainability, test coverage. Includes whether REVIEW log was executed. |
+| **Design/UX** | 25% | (if applicable) Usability, visual polish, responsiveness, completeness of i18n & accessibility. |
+| **Edge cases** | 20% | Exception handling, alternative code path coverage, input validation, error recovery. |
 
 ---
 
-## PASS 기준
+## PASS Criteria
 
-- 가중 평균 **7.0 이상**
-- 모든 항목 **5.0 이상** (단일 항목 과락 방지)
-- VERIFY 전체 통과 (tests / typecheck / lint / build)
+- Weighted average **≥ 7.0**
+- All items **≥ 5.0** (prevents failure on a single item)
+- All VERIFY gates passed (tests / typecheck / lint / build)
 
-## 점수 기준표
+## Score Reference
 
-| 점수 | 의미 |
+| Score | Meaning |
 |------|------|
-| 9-10 | 프로덕션 수준 초과. 예상보다 완성도 높음. |
-| 7-8 | 프로덕션 수준. 실사용 가능. |
-| 5-6 | 동작하나 개선 필요. PASS 경계. |
-| 3-4 | 주요 기능 미완성 또는 품질 문제. |
-| 1-2 | 구현 시도 수준. 대부분 미완성. |
+| 9-10 | Exceeds production quality. Higher completion than expected. |
+| 7-8 | Production quality. Ready for real use. |
+| 5-6 | Works but needs improvement. PASS boundary. |
+| 3-4 | Major features incomplete or quality issues. |
+| 1-2 | Implementation attempt level. Mostly incomplete. |
 
-> **주의**: 7점은 "충분히 좋음"이 아닌 "프로덕션 수준"을 의미.
-> 과대 채점 금지. 증거 기반(코드 + 실행 결과)으로만 판단.
+> **Note**: A 7 means "production ready", not "good enough".
+> No score inflation. Judge by evidence only (code + execution results).
 
 ---
 
-## 프로젝트 유형별 가중치 조정
+## Weight Adjustments by Project Type
 
-"설계/UX" 항목은 **UI가 있는 프로젝트**에 적용합니다.
-UI가 없는 프로젝트(CLI 도구, 라이브러리, 인프라 코드 등)는 아래 대체 가중치를 사용합니다.
+The "Design/UX" item applies to **projects with a UI**.
+For projects without UI (CLI tools, libraries, infrastructure code, etc.), use the alternative weights below.
 
-| 프로젝트 유형 | 기능 완성도 | 코드 품질 | 설계/API | 엣지 케이스 |
+| Project type | Feature completeness | Code quality | Design/API | Edge cases |
 |--------------|------------|----------|----------|------------|
-| **UI 포함** (기본) | 30% | 25% | 25% (UX) | 20% |
-| **CLI / 라이브러리** | 35% | 30% | 15% (API 설계) | 20% |
-| **인프라 / 스크립트** | 35% | 25% | 10% (운영 편의성) | 30% |
+| **With UI** (default) | 30% | 25% | 25% (UX) | 20% |
+| **CLI / Library** | 35% | 30% | 15% (API design) | 20% |
+| **Infrastructure / Scripts** | 35% | 25% | 10% (operational ergonomics) | 30% |
 
-- 평가 파일 상단에 사용한 가중치 프로필을 명시합니다 (예: `가중치: CLI/라이브러리`)
-- PASS 기준(가중 평균 7.0, 모든 항목 5.0 이상)은 프로필 무관 동일합니다
+- State the weight profile used at the top of the evaluation file (e.g., `Weight profile: CLI/Library`)
+- PASS criteria (weighted average ≥ 7.0, all items ≥ 5.0) are the same regardless of profile
 
 ---
 
-## 변경 이력
+## Change History
 
-| 버전 | 날짜 | 변경 내용 |
+| Version | Date | Changes |
 |------|------|-----------|
-| v1.0 | 2026-03-07 | 초기 버전. 4차원 채점 (기능 30% / 품질 25% / UX 25% / 엣지 20%). |
+| v1.0 | 2026-03-07 | Initial version. 4-dimension scoring (features 30% / quality 25% / UX 25% / edge 20%). |

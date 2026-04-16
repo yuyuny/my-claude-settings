@@ -1,153 +1,153 @@
-# Evaluator Agent (opus, 독립 세션)
+# Evaluator Agent (opus, separate session)
 
-Generator의 결과물을 독립적으로 평가합니다.
+Independently evaluates the Generator's output.
 
-**이 커맨드는 반드시 Generator와 다른 세션에서 `opus` 모델로 실행하세요.**
-같은 세션에서 실행하면 이전 컨텍스트의 자기 편향이 작용하여 평가 신뢰도가 떨어집니다.
+**This command must run with the `opus` model in a different session from the Generator.**
+Running in the same session introduces self-bias from prior context, reducing evaluation reliability.
 
-## 입력
-- `specs/{title}.md` — 원본 스펙 (완료 기준 + 검증 기준 확인용)
-- `handoffs/{title}.md` — Generator가 작성한 핸드오프
-- `.worktrees/{title}/` — Generator가 작업한 워크트리 (실제 구현 코드)
+## Inputs
+- `specs/{title}.md` — original spec (for acceptance criteria + verification criteria)
+- `handoffs/{title}.md` — handoff written by Generator
+- `.worktrees/{title}/` — worktree with the actual implementation code
 
-## 프로세스
+## Process
 
-### Step 1: 스펙 vs 핸드오프 대조
-서브에이전트(sonnet 1개)로 분리 실행합니다:
-- 서브에이전트 지시: 스펙의 "## 딜리버블"과 "## 완료 기준" 섹션, 핸드오프의 "## 완료된 딜리버블" 섹션만 읽을 것 — 두 파일 전체 로드 금지
-- 대조 결과 → `.worktrees/{title}/evaluation/{title}.md` 초안의 "## 딜리버블 대조" 섹션에 직접 기록
-- 반환 형식: `| 딜리버블 | 스펙 기준 | 핸드오프 상태 | 누락 Y/N |` 표
-- 메인 세션에는 **"누락 건수 N / 불일치 건수 M"**만 보고
+### Step 1: Spec vs Handoff Comparison
+Run as a sub-agent (1 sonnet):
+- Sub-agent instructions: read only the "## Deliverables" and "## Acceptance Criteria" sections of the spec, and the "## Completed Deliverables" section of the handoff — do not load entire files
+- Comparison results → write directly to the "## Deliverable Comparison" section of `.worktrees/{title}/evaluation/{title}.md` draft
+- Return format: `| Deliverable | Spec criteria | Handoff status | Missing Y/N |` table
+- Report only **"N missing / M mismatches"** to main session
 
-이후 Step 3·4에서 스펙·핸드오프를 다시 참조해야 할 경우 **필요한 섹션만 줄 범위를 지정해 Read** — 전체 파일 재로드 금지.
+If spec or handoff must be referenced again in Steps 3 or 4, **Read only the needed sections with a line range** — do not reload entire files.
 
-### Step 2: VERIFY 재검증
-Generator의 워크트리로 이동하여 직접 재실행합니다:
+### Step 2: VERIFY Re-validation
+Navigate to the Generator's worktree and run directly:
 ```bash
 cd .worktrees/{title}
-# .claude/rules/verify-commands.md 를 읽고 정의된 게이트 명령을 순차 실행
+# Read .claude/rules/verify-commands.md and run the defined gate commands sequentially
 ```
-Generator의 VERIFY 결과를 신뢰하지 말 것 — 직접 확인.
+Do not trust Generator's VERIFY results — verify independently.
 
-### Step 3: 코드 검증
-실제 코드를 읽고 검증합니다.
+### Step 3: Code Validation
+Read the actual code and validate.
 
-**읽기 범위 제한 (토큰 절감 핵심 규칙)**:
-- 핸드오프의 "## 완료된 딜리버블"과 "## Known Gotchas"에 언급된 파일만 대상으로 Read
-- 해당 섹션에 없는 파일은 의심 근거가 있을 때만 추가로 읽음 (사전 탐색 금지)
-- 파일 전체가 필요한 경우는 드묾 — 줄 범위(`offset`/`limit`)를 항상 지정
+**Read scope limits (key token-saving rule)**:
+- Only target files mentioned in the handoff's "## Completed Deliverables" and "## Known Gotchas" sections
+- Only read files not in those sections if there is a specific reason for suspicion (no preemptive exploration)
+- Reading entire files is rarely necessary — always specify a line range (`offset`/`limit`)
 
-검증 항목:
-- 핸드오프에서 주장한 내용이 코드에 실제로 존재하는가?
-- Generator의 자기 평가를 신뢰하지 말 것 — 직접 확인
-- **REVIEW 실행 검증**: 핸드오프의 REVIEW 로그 섹션 확인
-  - **REVIEW 로그가 0회(비어 있음)인 경우 코드 품질 자동 5점 미만 처리** — 태스크 수 무관, 세션당 최소 1회 필수
-  - `git log --oneline | grep "review:"` 로 리뷰 수정 커밋 존재 여부 확인 (이슈 없음 회차는 review 커밋이 없을 수 있음 — 핸드오프 로그 우선)
-  - 1회 초과 회차의 적절성도 확인 (2-3 태스크당 1회 권장)
+Validation items:
+- Does what the handoff claims actually exist in the code?
+- Do not trust Generator's self-assessment — verify directly
+- **REVIEW execution validation**: Check the REVIEW log section in the handoff
+  - **If REVIEW log has 0 entries (empty), automatically score code quality below 5** — regardless of task count, minimum 1 per session is required
+  - Run `git log --oneline | grep "review:"` to check for review fix commits (rounds with no issues may not have review commits — handoff log takes priority)
+  - Also check appropriateness of rounds beyond 1 (1 per 2-3 tasks recommended)
 
 ```
 Launch parallel (sonnet):
-  Agent 1: 테스트 스위트 실행 → 요약 3줄 + 실패 건수 (로그 dump 금지)
-  Agent 2: 코드 품질 정적 분석
-          ↳ 대상: 핸드오프 "## 완료된 딜리버블"과 "## Known Gotchas"에 명시된 파일만
-          ↳ 해당 섹션에 없는 파일은 읽지 않음 (사전 탐색 금지)
-          ↳ 반환 형식: `파일:라인 — 이슈` (bullet only, 15개 이내)
+  Agent 1: Run test suite → 3-line summary + failure count (no log dump)
+  Agent 2: Static code quality analysis
+          ↳ Target: only files listed in handoff "## Completed Deliverables" and "## Known Gotchas"
+          ↳ Do not read files not in those sections (no preemptive exploration)
+          ↳ Return format: `file:line — issue` (bullet only, max 15)
 ```
 
-### Step 4: 동작 검증
-핸드오프의 "동작 확인 방법"에 따라 직접 실행합니다:
-- 주요 시나리오 수동 확인
-- 프로젝트 유형에 따라 적절한 검증 수단 사용 (UI: 인터랙션 테스트 / CLI: 실행 결과 / 게임: 플레이 스모크 / 서비스: API 호출 등)
+### Step 4: Behavior Validation
+Run directly following the "How to Verify Behavior" section in the handoff:
+- Manually verify key scenarios
+- Use appropriate verification methods based on project type (UI: interaction tests / CLI: execution results / game: play smoke test / service: API calls, etc.)
 
-### Step 5: 채점
+### Step 5: Scoring
 
-`../../evaluation/rubric-v1.md`를 Read하여 채점 기준, 가중치, PASS 기준을 확인합니다.
-루브릭 버전을 evaluation 파일 상단에 명시합니다. (`rubric-v1.md`가 없으면 평가를 중단하고 사용자에게 알립니다.)
+Read `../../evaluation/rubric-v1.md` to check scoring criteria, weights, and PASS threshold.
+State the rubric version at the top of the evaluation file. (If `rubric-v1.md` is missing, stop evaluation and notify the user.)
 
-### Step 6: 판정
+### Step 6: Verdict
 
-- **가중 평균 7.0 이상 + 모든 항목 5.0 이상 + VERIFY 전체 통과**: → PASS
-- **그 외**: → FAIL + 구체적 개선 피드백
+- **Weighted average ≥ 7.0 + all items ≥ 5.0 + all VERIFY gates passed**: → PASS
+- **Otherwise**: → FAIL + specific improvement feedback
 
-### Step 6.5: 워크플로우 상태 기록
+### Step 6.5: Record Workflow State
 
-판정 결과에 맞게 state를 선택해 실행합니다 (스크립트가 git root를 자동 탐지):
+Select the state matching the verdict and run (script auto-detects git root):
 
 ```bash
-# PASS 시:
+# On PASS:
 ../../.claude/scripts/workflow-advance.sh record {title} evaluated_pass evaluation .worktrees/{title}/evaluation/{title}.md
-# FAIL 시:
+# On FAIL:
 ../../.claude/scripts/workflow-advance.sh record {title} evaluated_fail evaluation .worktrees/{title}/evaluation/{title}.md
 ```
 
-### Step 7: 스펙 체크박스 업데이트 (PASS 시에만)
+### Step 7: Update Spec Checkboxes (PASS only)
 
-PASS 판정을 내린 경우에만 `specs/{title}.md`의 체크박스를 업데이트합니다.
-`specs/{title}.md`는 워크트리 브랜치에 있으므로 `.worktrees/{title}` 안에서 그대로 커밋합니다:
+Only update `specs/{title}.md` checkboxes on a PASS verdict.
+`specs/{title}.md` is in the worktree branch, so commit directly inside `.worktrees/{title}`:
 
-1. **딜리버블 체크박스**: 각 `- [ ]`를 `- [x]`로 변경
-2. **VERIFY 체크박스**: 각 `- [ ]`를 `- [x]`로 변경
-3. `.worktrees/{title}` 안에서 커밋 (이미 여기에 있으면 `cd` 불필요):
+1. **Deliverable checkboxes**: Change each `- [ ]` to `- [x]`
+2. **VERIFY checkboxes**: Change each `- [ ]` to `- [x]`
+3. Commit inside `.worktrees/{title}` (no `cd` needed if already there):
 ```bash
 git add specs/{title}.md
 git commit -m "docs: mark spec deliverables as verified"
 ```
 
-FAIL 판정 시에는 specs 파일을 수정하지 않습니다.
+Do not modify the specs file on a FAIL verdict.
 
-## 출력 형식
+## Output Format
 
-워크트리 내 `evaluation/{title}.md`에 저장 (경로: `.worktrees/{title}/evaluation/{title}.md`):
+Save to `evaluation/{title}.md` inside the worktree (path: `.worktrees/{title}/evaluation/{title}.md`):
 
 ```markdown
-# Evaluation: {세션 제목}
+# Evaluation: {session title}
 
-> 루브릭: v1.0 (`../../evaluation/rubric-v1.md`)
+> Rubric: v1.0 (`../../evaluation/rubric-v1.md`)
 
-## 딜리버블 대조
-<!-- Step 1 서브에이전트가 직접 작성. 메인 세션은 "누락 건수 N / 불일치 건수 M"만 보고받음. -->
-| 딜리버블 | 스펙 기준 | 핸드오프 상태 | 누락 Y/N |
+## Deliverable Comparison
+<!-- Step 1 sub-agent writes directly. Main session receives only "N missing / M mismatches". -->
+| Deliverable | Spec criteria | Handoff status | Missing Y/N |
 |---|---|---|---|
 
-## 판정: PASS / FAIL
+## Verdict: PASS / FAIL
 
-## VERIFY 재검증
-- 테스트: {결과}
-- 타입체크: {결과}
-- 린트: {결과}
-- 빌드: {결과}
+## VERIFY Re-validation
+- Tests: {result}
+- Typecheck: {result}
+- Lint: {result}
+- Build: {result}
 
-## 채점표
-| 기준 | 점수 | 근거 |
+## Scorecard
+| Criteria | Score | Evidence |
 |---|---|---|
-| 기능 완성도 | {n}/10 | {1-2문장} |
-| 코드 품질 | {n}/10 | {1-2문장} |
-| 설계/UX | {n}/10 | {1-2문장} |
-| 엣지 케이스 | {n}/10 | {1-2문장} |
-| **가중 평균** | **{n}/10** | |
+| Feature completeness | {n}/10 | {1-2 sentences} |
+| Code quality | {n}/10 | {1-2 sentences} |
+| Design/UX | {n}/10 | {1-2 sentences} |
+| Edge cases | {n}/10 | {1-2 sentences} |
+| **Weighted average** | **{n}/10** | |
 
-## 강점 (최대 5개)
-- {잘된 부분}
+## Strengths (max 5)
+- {what went well}
 
-## 개선 필요 (FAIL 시 필수)
-- [ ] {구체적 수정 사항 1}: {어디서, 무엇을, 왜}
-- [ ] {구체적 수정 사항 2}: ...
+## Needs Improvement (required on FAIL)
+- [ ] {specific fix 1}: {where, what, why}
+- [ ] {specific fix 2}: ...
 
-## 검증 로그 (최대 5개, raw 출력 dump 금지 — 요약만)
-- 테스트 실행 결과: {통과 N개 / 실패 N개}
-- 동작 확인: {확인한 시나리오와 PASS/FAIL}
+## Verification Log (max 5, no raw output dump — summaries only)
+- Test run results: {N passed / N failed}
+- Behavior check: {scenario checked and PASS/FAIL}
 ```
 
-## 평가 태도 규칙
-- **회의적 기본 자세**: Generator가 "완료"라고 주장한 것을 의심하라
-- **증거 기반**: 주장이 아닌 코드와 실행 결과로 판단
-- **건설적 비판**: FAIL 시 "무엇이 잘못"보다 "어떻게 고칠지"에 집중
-- **과대 채점 금지**: 7점은 "충분히 좋음"이 아닌 "프로덕션 수준"을 의미
-- **VERIFY 독립 재검증**: Generator의 검증 결과를 그대로 믿지 않음
-- **워크트리 확인**: 반드시 `.worktrees/{title}` 에서 검증 수행
+## Evaluation Attitude Rules
+- **Default skepticism**: Doubt what Generator claims as "complete"
+- **Evidence-based**: Judge by code and execution results, not claims
+- **Constructive criticism**: On FAIL, focus on "how to fix it" more than "what went wrong"
+- **No score inflation**: A 7 means "production ready", not "good enough"
+- **Independent VERIFY re-validation**: Do not take Generator's verification results at face value
+- **Worktree check**: Always validate inside `.worktrees/{title}`
 
-## PASS 후 머지
-PASS 판정 시 보고서에 다음 머지 명령을 텍스트로 안내합니다 (Evaluator가 직접 실행하지 않음 — 사람이 확인 후 수행):
+## Post-PASS Merge
+On a PASS verdict, include the following merge command as text in the report (Evaluator does not run it directly — a human confirms and executes):
 
 `git checkout main && git merge {title} && git worktree remove .worktrees/{title} && git branch -d {title}`
 

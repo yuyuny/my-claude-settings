@@ -1,97 +1,97 @@
 # Reflect-Batch Agent (sonnet)
 
-`reflections/` 누적 파일에서 반복 패턴을 집계하고 워크플로우 규칙을 개선합니다.
+Aggregates accumulated `reflections/` files to identify recurring patterns and improve workflow rules.
 
-## 언제 실행하는가
+## When to Run
 
-- 새 reflection 파일이 **5개 이상** 누적됐을 때 (마지막 배치 집계 이후 기준)
-- 프로젝트 마일스톤(스테이지 완성, 릴리즈 등) 후
-- 사람이 `/reflect-batch`를 직접 호출할 때
+- When **5 or more** new reflection files have accumulated (since the last batch aggregation)
+- After a project milestone (stage completion, release, etc.)
+- When a person directly invokes `/reflect-batch`
 
-## 입력
+## Inputs
 
-- `reflections/index.md` — 마지막 배치 집계 날짜 확인
-- `reflections/*.md` — 마지막 집계 이후 새 파일들
-- `.claude/rules/*.md` — 현재 워크플로우 규칙
-- `docs/GLOSSARY.md` — 현재 용어 사전
+- `reflections/index.md` — check the last batch aggregation date
+- `reflections/*.md` — new files since the last aggregation
+- `.claude/rules/*.md` — current workflow rules
+- `docs/GLOSSARY.md` — current glossary
 
-## 프로세스
+## Process
 
-### Step 1: 미처리 파일 파악
+### Step 1: Identify Unprocessed Files
 
-`reflections/index.md`의 "마지막 배치 집계" 날짜를 확인합니다.
-해당 날짜 이후의 reflection 파일 목록을 수집합니다.
+Check the "Last batch aggregation" date in `reflections/index.md`.
+Collect the list of reflection files after that date.
 
 ```bash
 ls reflections/ | grep -v index.md | sort
 ```
 
-### Step 2: 패턴 추출 (병렬)
+### Step 2: Extract Patterns (parallel)
 
-미처리 파일들을 읽고 각 파일의 다음 섹션을 추출합니다.
+Read unprocessed files and extract the following sections from each.
 
-**출력 계약**: 서브에이전트 출력 계약(`.claude/rules/multi-agent-workflow.md`) 준수.
+**Output contract**: Follow the sub-agent output contract in `.claude/rules/multi-agent-workflow.md`.
 
 ```
 Launch parallel (sonnet × 2):
-  Agent 1: "어려웠던 점" 섹션 집계
-           → 반환: | 주제 | 횟수 | 출처 파일 | 형식의 표
-  Agent 2: "프로세스 관찰" + "사람에게" 섹션 집계
-           → 반환: | 주제 | 횟수 | 출처 파일 | 형식의 표
+  Agent 1: Aggregate "difficulties" sections
+           → Return: | Topic | Count | Source file | table
+  Agent 2: Aggregate "process observations" + "for the next Claude" sections
+           → Return: | Topic | Count | Source file | table
 ```
 
-이 표 형식으로 반환받아야 Step 3에서 메인이 재가공 없이 바로 반복 패턴 판별에 사용할 수 있습니다.
+These tables must be returned in this format so Step 3 can directly use them for pattern detection without further processing by main.
 
-### Step 3: 반복 패턴 판별
+### Step 3: Identify Recurring Patterns
 
-집계 결과에서 **3회 이상** 반복된 주제를 찾습니다.
+Find topics that appear **3 or more times** in the aggregation results.
 
-예시 반복 패턴:
-- "대체 코드 경로 누락" → `generate.md` SCOPE 강화 (이미 반영됨)
-- "핸드오프에 API 시그니처 미기재" → 핸드오프 템플릿에 항목 추가
-- "린트 규칙 X가 자주 위반됨" → `rules/coding-style.md`에 명시
+Example recurring patterns:
+- "Missing alternative code path" → strengthen `generate.md` SCOPE (already applied)
+- "API signature not documented in handoff" → add item to handoff template
+- "Lint rule X frequently violated" → document in `rules/coding-style.md`
 
-### Step 4: 규칙 업데이트 제안 및 적용
+### Step 4: Propose and Apply Rule Updates
 
-반복 패턴마다:
+For each recurring pattern:
 
-1. **해당 rules/ 파일 식별**: 어느 규칙 파일을 수정해야 하는가?
-2. **변경 내용 작성**: 구체적으로 어떤 줄을 추가/수정하는가?
-3. **적용**: 규칙 파일 직접 수정
-4. **신규 규칙 필요 시**: `.claude/rules/{topic}.md` 신규 생성
+1. **Identify the relevant rules/ file**: Which rule file needs modification?
+2. **Write the change**: What specific lines to add/modify?
+3. **Apply**: Directly modify the rule file
+4. **If a new rule is needed**: Create `.claude/rules/{topic}.md`
 
-반복 3회 미만 패턴은 `reflections/index.md`의 "반복 패턴 메모" 섹션에 기록만 합니다.
+Patterns appearing fewer than 3 times are only recorded in the "Recurring Pattern Notes" section of `reflections/index.md`.
 
-### Step 5: 인덱스 업데이트
+### Step 5: Update Index
 
-`reflections/index.md`의 "마지막 배치 집계" 날짜를 오늘 날짜로 업데이트합니다.
-"반복 패턴 메모" 섹션에 이번 집계 요약을 추가합니다:
+Update the "Last batch aggregation" date in `reflections/index.md` to today.
+Add a summary of this aggregation to the "Recurring Pattern Notes" section:
 
 ```markdown
-### YYYY-MM-DD 배치 집계
+### YYYY-MM-DD Batch Aggregation
 
-처리 파일: N개 (YYYY-MM-DD ~ YYYY-MM-DD)
+Processed files: N (YYYY-MM-DD ~ YYYY-MM-DD)
 
-**반복 패턴 (3회 이상 → 규칙 적용)**
-- {패턴}: {적용한 rules/ 파일}
+**Recurring patterns (3+ occurrences → rule applied)**
+- {pattern}: {rules/ file applied}
 
-**약한 신호 (3회 미만 → 모니터링)**
-- {패턴}: {N회}
+**Weak signals (under 3 occurrences → monitoring)**
+- {pattern}: {N occurrences}
 ```
 
-### Step 6: 커밋
+### Step 6: Commit
 
 ```bash
 git add reflections/index.md .claude/rules/ docs/GLOSSARY.md
-git commit -m "docs: reflect-batch — {주요 패턴 요약}"
+git commit -m "docs: reflect-batch — {key pattern summary}"
 ```
 
-## 규칙
+## Rules
 
-- 추측 기반 규칙 추가 금지 — 반드시 reflection 파일에서 증거 3건 이상 확보 후 적용
-- 기존 rules/ 파일 전면 재작성 금지 — 특정 항목 추가/수정만
-- **규칙 파일 수정 전**: 변경 내용(diff 형태)을 사용자에게 보여주고 승인 받기
-- 승인 없이 적용 가능한 경우: 명백한 누락 항목 추가 (예: 자주 빠지는 SCOPE 체크리스트 항목)
-- 승인 필요한 경우: 기존 규칙과 충돌하거나 워크플로우 구조를 바꾸는 변경
+- No speculative rule additions — must have evidence from at least 3 reflection files before applying
+- No full rewrites of existing rules/ files — only add/modify specific items
+- **Before modifying rule files**: Show the change (in diff form) to the user and get approval
+- Approval not required for: adding clearly missing items (e.g., frequently omitted SCOPE checklist items)
+- Approval required for: changes that conflict with existing rules or alter the workflow structure
 
 $ARGUMENTS

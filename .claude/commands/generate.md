@@ -1,164 +1,164 @@
 # Generator Agent (sonnet + opus)
 
-스펙을 읽고 기존 워크플로우(SCOPE→PLAN→IMPLEMENT→REVIEW→VERIFY)에 따라 구현합니다.
-**모든 작업은 `.worktrees/{title}` 에서 진행합니다.**
+Reads the spec and implements following the established workflow (SCOPE→PLAN→IMPLEMENT→REVIEW→VERIFY).
+**All work is done inside `.worktrees/{title}`.**
 
-## 입력
-- `specs/{title}.md` — 구현할 스프린트 스펙
-- `evaluation/{title}.md` — (재작업 시) 이전 평가 보고서
+## Inputs
+- `specs/{title}.md` — the sprint spec to implement
+- `evaluation/{title}.md` — (for rework) previous evaluation report
 
-## 프로세스
+## Process
 
-### Step 0: 워크스페이스 준비
+### Step 0: Workspace Setup
 
-`/spec`이 워크트리를 이미 생성했으므로 이동 후 스펙 파일 존재를 확인합니다.
-아래 블록의 의존성 설치 명령은 **프로젝트 스택의 기본값으로 교체**한다. 기본은 Node/pnpm이며, 다른 스택 예시는 블록 하단 주석 참고.
+`/spec` has already created the worktree, so navigate to it and verify the spec file exists.
+Replace the dependency install command in the block below with the **default for your project stack**. Default is Node/pnpm; see block comments for other stack examples.
 
 ```bash
 cd .worktrees/{title}
-test -f specs/{title}.md || { echo "ERROR: specs/{title}.md 가 없습니다. /spec을 먼저 실행하세요."; exit 1; }
-# 의존성 설치: .claude/rules/verify-commands.md 의 스택을 확인한 후 적절한 명령 실행
-# 예) Node/pnpm → pnpm install --frozen-lockfile
-#     Python    → poetry install
-#     Go        → go mod download
-#     Rust      → cargo fetch
+test -f specs/{title}.md || { echo "ERROR: specs/{title}.md not found. Run /spec first."; exit 1; }
+# Install dependencies: check the stack in .claude/rules/verify-commands.md and run the appropriate command
+# e.g.) Node/pnpm → pnpm install --frozen-lockfile
+#        Python    → poetry install
+#        Go        → go mod download
+#        Rust      → cargo fetch
 ```
 
-재작업인 경우: 워크트리가 이미 존재하므로 `cd .worktrees/{title}` 후 바로 진행.
-의존성 캐시(`node_modules`/`.venv`/`target` 등)가 없으면 위 설치 명령을 먼저 실행.
+For rework: the worktree already exists, so just `cd .worktrees/{title}` and continue.
+If the dependency cache (`node_modules` / `.venv` / `target`, etc.) is missing, run the install command first.
 
-워크스페이스 준비 직후 `generating` 상태를 기록합니다 (재작업 포함):
+Record `generating` state immediately after workspace setup (including rework):
 
 ```bash
 ../../.claude/scripts/workflow-advance.sh record {title} generating
 ```
 
-### Step 1: SCOPE — 병렬 탐색 (sonnet × 2~3)
-구현 전 영향 범위를 병렬 탐색 에이전트로 파악합니다.
+### Step 1: SCOPE — Parallel Exploration (sonnet × 2~3)
+Use parallel exploration agents to identify the scope of impact before implementing.
 
-**재작업인 경우**: `evaluation/{title}.md`의 FAIL 피드백을 먼저 확인합니다.
-`handoffs/{title}.md`에 이전 SCOPE 결과가 있고 피드백이 새로운 파일/모듈 탐색을 요구하지 않으면 SCOPE를 재사용하고 이 Step을 건너뜁니다.
+**For rework**: First check the FAIL feedback in `evaluation/{title}.md`.
+If `handoffs/{title}.md` has previous SCOPE results and the feedback doesn't require exploring new files/modules, reuse SCOPE and skip this step.
 
 ```
 Launch parallel (sonnet):
-  Agent 1: 영향 받는 파일/모듈 탐색 → `경로/파일 — 이유`
-  Agent 2: 기존 테스트 커버리지 확인 (없으면 스킵) → `테스트파일 — 범위`
-  Agent 3: 상태 흐름/의존성 추적 (spec "영향 받는 경로" 기준, 대체 경로 포함)
+  Agent 1: Explore affected files/modules → `path/file — reason`
+  Agent 2: Check existing test coverage (skip if none) → `test_file — scope`
+  Agent 3: Trace state flow/dependencies (based on spec "Affected Paths", including alternative paths)
 ```
 
-### Step 2: PLAN — 마이크로태스크 분해
-`specs/{title}.md`의 딜리버블을 **2~5분 단위 태스크**로 분해합니다.
-각 태스크는 독립적으로 완료·커밋 가능해야 합니다.
+### Step 2: PLAN — Micro-task Breakdown
+Break the deliverables in `specs/{title}.md` into **2~5 minute tasks**.
+Each task must be independently completable and committable.
 
-분해 결과는 **`handoffs/{title}.md`의 "## 태스크 분해" 섹션에 직접 기록**합니다 (파일이 없으면 이 시점에 생성).
-메인 세션에는 "태스크 수 N개 / 불명확 지점 M개"만 유지합니다.
+Record breakdown results **directly in the "## Task Breakdown" section of `handoffs/{title}.md`** (create the file at this point if it doesn't exist).
+Report only "N tasks / M unclear points" to the main session.
 
-불명확한 부분(가정)은 핸드오프의 "Known Gotchas" 또는 "## 가정" 섹션에 기록합니다.
-SCOPE에서 대체 경로가 미확인된 항목은 구현 전 코드에서 반드시 직접 확인합니다.
+Record unclear points (assumptions) in the handoff's "Known Gotchas" or "## Assumptions" section.
+Any alternative paths left unverified by SCOPE must be confirmed directly in code before implementation.
 
-### Step 3: IMPLEMENT — TDD 루프 (sonnet)
-각 마이크로태스크마다 **RED → GREEN → REFACTOR → 커밋** 순서로 진행합니다.
-테스트 없이 구현하지 않습니다. 테스트가 불가능한 부분(UI 레이아웃 등)은 명시적으로 기록합니다.
+### Step 3: IMPLEMENT — TDD Loop (sonnet)
+For each micro-task, follow **RED → GREEN → REFACTOR → commit** order.
+Never implement without tests. Explicitly document areas where testing is not feasible (UI layout, etc.).
 
-**컨텍스트 덤프 타이밍** — 아래 조건 중 하나라도 해당하면 즉시 진행 상황을 `handoffs/{title}.md`에 기록하고 새 세션으로 이어받습니다:
-- 태스크 5개 완료 시점
-- Read 도구 호출 누적 10회 초과 (파일 수 기준이 아닌 호출 수 기준)
-- REVIEW(Step 4)를 1회 이상 완료한 상태에서 남은 태스크가 3개 이상
+**Context dump timing** — immediately record progress in `handoffs/{title}.md` and hand off to a new session if any of these conditions apply:
+- 5 tasks completed
+- Accumulated Read tool calls exceed 10 (by call count, not file count)
+- 3 or more tasks remaining after completing 1+ REVIEW
 
-새 세션 재개 절차:
+New session resumption procedure:
 ```
-1. handoffs/{title}.md의 "## 태스크 분해"에서 완료/미완료 표시 확인
+1. Check completed/incomplete markers in handoffs/{title}.md "## Task Breakdown"
 2. cd .worktrees/{title}
-3. 미완료 태스크부터 이어서 진행
+3. Continue from the first incomplete task
 ```
 
-### Step 4: REVIEW — diff 기반 코드 리뷰 (opus)
-**VERIFY 실행 전 반드시 완료. REVIEW 로그 미작성 시 핸드오프 금지.**
-매 2~3개 태스크 완료 시점마다 추가 리뷰를 수행합니다. 태스크가 1개여도 면제되지 않습니다.
+### Step 4: REVIEW — Diff-based Code Review (opus)
+**Must complete before running VERIFY. Handoff is prohibited if REVIEW log is missing.**
+Perform additional reviews every 2~3 completed tasks. Not exempt even for a single task.
 
-1. `/simplify` 스킬을 실행하여 diff 기반 리뷰 수행
-2. `/simplify` 서브에이전트에 지시: **결과를 `handoffs/{title}.md`의 REVIEW 로그 섹션에 직접 1줄 append** 후 메인에는 "critical Y/N + 수정 필요 파일 경로"만 보고
-3. 메인 세션은 critical=Y일 때만 상세 이슈를 요청. REVIEW 로그 표는 서브에이전트가 직접 작성.
-4. Critical 이슈 발견 시 다음 태스크 진행 차단 → 즉시 수정
-5. 수정 커밋 메시지에 `review:` 접두사 사용 (예: `review: extract shared helper`)
-6. 예외 컨텍스트가 있으면 리뷰 시 제공
+1. Run the `/simplify` skill for a diff-based review
+2. Instruct `/simplify` sub-agent: **directly append results to the REVIEW log section of `handoffs/{title}.md`** in 1 line, then report only "critical Y/N + file path needing fix" to main
+3. Main session requests detailed issues only when critical=Y. Sub-agent writes the REVIEW log table directly.
+4. If a critical issue is found, block the next task → fix immediately
+5. Use `review:` prefix in fix commit messages (e.g., `review: extract shared helper`)
+6. Provide exception context during review if available
 
-### Step 5: VERIFY — 검증 게이트
-**핸드오프 전 반드시 통과해야 하는 게이트.**
+### Step 5: VERIFY — Verification Gates
+**Gates that must pass before handoff.**
 
-서브에이전트(sonnet 1개)로 분리 실행합니다:
-- 서브에이전트가 **`.claude/rules/verify-commands.md`를 먼저 읽고** 정의된 명령을 순차 실행
-- 결과를 `handoffs/{title}.md`의 "## VERIFY 결과" 섹션에 직접 채움
-- 메인 세션에는 **"전체 PASS Y/N + 실패 게이트 목록"**만 보고
+Run as a sub-agent (1 sonnet):
+- Sub-agent **reads `.claude/rules/verify-commands.md` first** and runs the defined commands sequentially
+- Fills in results directly in the "## VERIFY Results" section of `handoffs/{title}.md`
+- Reports only **"overall PASS Y/N + list of failed gates"** to main session
 
-실패 시: 메인이 서브에이전트에게 "실패 게이트의 에러 요약 10줄 이내"를 후속 요청합니다. 에러 전체 dump 금지.
-하나라도 실패하면 핸드오프 금지 — 수정 후 재실행합니다.
+On failure: Main requests "error summary within 10 lines for failed gate" as a follow-up. No full error dump.
+If any gate fails, handoff is prohibited — fix and re-run.
 
-### Step 6: HANDOFF — 핸드오프 작성
-작성 전 체크:
-- REVIEW 로그 1회 이상 기록 확인 → 없으면 Step 4로 돌아가 REVIEW 먼저 실행
-- VERIFY 전체 PASS 확인 → 미통과 시 핸드오프 금지
+### Step 6: HANDOFF — Write Handoff
+Pre-write checklist:
+- Confirm REVIEW log has at least 1 entry → if not, go back to Step 4 and run REVIEW first
+- Confirm VERIFY fully passed → handoff prohibited if not
 
-위 두 조건 충족 후 워크트리 내에 `handoffs/{title}.md`를 작성합니다.
-(경로: `.worktrees/{title}/handoffs/{title}.md`)
-이 파일이 Evaluator에게 전달되는 **유일한 컨텍스트**입니다.
+After meeting both conditions, write `handoffs/{title}.md` inside the worktree.
+(Path: `.worktrees/{title}/handoffs/{title}.md`)
+This file is the **only context** passed to the Evaluator.
 
-작성 완료 후 워크플로우 상태를 기록합니다:
+After writing, record workflow state:
 
 ```bash
 ../../.claude/scripts/workflow-advance.sh record {title} handoff_ready handoff .worktrees/{title}/handoffs/{title}.md
 ```
 
-## 핸드오프 작성 규칙
+## Handoff Writing Rules
 
-`handoffs/{title}.md`에 반드시 포함:
+`handoffs/{title}.md` must include:
 
 ```markdown
-# Handoff: {세션 제목}
+# Handoff: {session title}
 
-## 태스크 분해
-<!-- Step 2 PLAN에서 선행 작성됨. 여기에 직접 기록. -->
-- 태스크 1: {설명}
-- 태스크 2: {설명}
+## Task Breakdown
+<!-- Pre-written in Step 2 PLAN. Record directly here. -->
+- Task 1: {description}
+- Task 2: {description}
 - ...
 
-## 완료된 딜리버블
-- [x] 딜리버블 1: {완료 상태 요약}
-- [x] 딜리버블 2: ...
-- [ ] 딜리버블 3: {미완료 시 사유}
+## Completed Deliverables
+- [x] Deliverable 1: {completion status summary}
+- [x] Deliverable 2: ...
+- [ ] Deliverable 3: {reason if incomplete}
 
-## 설계 노트 (해당 시)
-- 주요 결정: {결정 내용 — 이유}
-- 제한사항: {트레이드오프 또는 기술 부채}
+## Design Notes (if applicable)
+- Key decisions: {decision — rationale}
+- Constraints: {trade-offs or technical debt}
 
-## Known Gotchas (해당 시 — 없으면 섹션 생략)
-- {다음 에이전트가 놓치기 쉬운 함정 — 비명시적 사이드이펙트, 중복 경로, 순서 의존성}
-- 예: "기능 X가 표준 파이프라인을 우회해 별도 저장 경로를 호출함 — 해당 경로도 함께 수정 필요"
+## Known Gotchas (omit section if none)
+- {Traps the next agent might miss — implicit side effects, duplicate paths, ordering dependencies}
+- e.g., "Feature X bypasses the standard pipeline and calls a separate storage path — that path also needs updating"
 
-## REVIEW 로그
-<!-- 세션당 최소 1회 필수. 비어 있으면 핸드오프 불완전. -->
-- 1회차 (필수, 태스크 1-3 후 또는 세션 종료 전): {이슈 80자 이내 또는 "없음"} / {수정 커밋 해시 + 1줄 또는 "-"}
-- 2회차 (선택, 태스크 4-6 후): ...
-<!-- 4회차 이상: 이슈 없음 회차는 생략. /simplify 서브에이전트가 직접 append. -->
+## REVIEW Log
+<!-- Minimum 1 entry per session required. Handoff is incomplete if empty. -->
+- Round 1 (required, after tasks 1-3 or before session end): {issue in 80 chars or "none"} / {fix commit hash + 1 line or "-"}
+- Round 2 (optional, after tasks 4-6): ...
+<!-- Round 4+: omit rounds with no issues. /simplify sub-agent appends directly. -->
 
-## VERIFY 결과
-- 테스트: {통과 n개 / 실패 0개}
-- 타입체크: PASS
-- 린트: PASS
-- 빌드: PASS
-- 실행 방법: `{테스트 명령어}`
+## VERIFY Results
+- Tests: {n passed / 0 failed}
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+- How to run: `{test command}`
 
-## 동작 확인 방법
-- `{실행 명령어}`
-- {확인할 주요 시나리오}
+## How to Verify Behavior
+- `{run command}`
+- {key scenarios to check}
 ```
 
-## 규칙
-- 스펙에 없는 기능을 임의로 추가하지 않음 (scope creep 방지)
-- `specs/{title}.md`의 체크박스를 수정하지 않음 — 체크박스는 Evaluator가 PASS 판정 후 직접 업데이트함
-- VERIFY 통과 전 절대 핸드오프하지 않음
-- 컨텍스트 덤프 조건(태스크 5개 완료 / Read 도구 호출 누적 10회 초과 / REVIEW 후 잔여 태스크 3개 이상)에 해당하면 세션 분할 — 재량 판단 금지, 조건 도달 즉시 분할
-- 모든 작업은 반드시 `.worktrees/{title}` 에서 진행 (메인 브랜치 직접 수정 금지)
-- 워크트리 내 커밋은 `{title}` 브랜치에 쌓임 → Evaluator PASS 후 메인에 머지
+## Rules
+- Do not add features not in the spec (prevent scope creep)
+- Do not modify checkboxes in `specs/{title}.md` — checkboxes are updated by the Evaluator after a PASS verdict
+- Never handoff before VERIFY passes
+- If context dump conditions are met (5 tasks done / 10+ Read calls / 3+ tasks remaining after REVIEW), split session immediately — no discretionary judgment, split as soon as conditions are reached
+- All work must be done inside `.worktrees/{title}` (no direct modification of the main branch)
+- Commits inside the worktree stack on the `{title}` branch → merge to main after Evaluator PASS
 
 $ARGUMENTS

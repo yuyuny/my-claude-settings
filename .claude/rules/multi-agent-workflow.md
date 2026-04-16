@@ -1,45 +1,45 @@
 # Multi-Agent Workflow
 
-## 모델 배정
+## Model Assignment
 
-| 작업                        | 모델                   |
-| --------------------------- | ---------------------- |
-| 탐색 (SCOPE)                | `sonnet` — 병렬 2~3개 |
-| 구현 (IMPLEMENT)            | `sonnet`               |
-| 리뷰 (REVIEW)               | `opus`                 |
-| 브레인스토밍 (Brainstormer) | `opus`                 |
-| 스펙 작성 (Spec Writer)     | `sonnet`               |
-| 평가 (Evaluator)            | `opus`                 |
-| 회고 (Reflector)            | `sonnet`               |
+| Task                  | Model                    |
+| --------------------- | ------------------------ |
+| Exploration (SCOPE)   | `sonnet` — 2~3 in parallel |
+| Implementation (IMPLEMENT) | `sonnet`            |
+| Review (REVIEW)       | `opus`                   |
+| Brainstorming         | `opus`                   |
+| Spec Writing          | `sonnet`                 |
+| Evaluation            | `opus`                   |
+| Reflection            | `sonnet`                 |
 
-> 메인 세션은 `sonnet`을 가정. `/generate`를 `opus`로 띄우면 IMPLEMENT/PLAN 전구간 비용 급증.
+> Main session assumes `sonnet`. Running `/generate` with `opus` significantly increases cost across the IMPLEMENT/PLAN phases.
 
-## 워크플로우
+## Workflow
 
-`/brainstorm` (선택) → `/spec` → `/generate` → `/evaluate` (별도 세션) → `/reflect`
+`/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
 
-`/brainstorm`은 요구사항이 모호할 때만 실행. 명확하면 `/spec`으로 바로 시작.
+`/brainstorm` is optional, not the default. If requirements are already clear in the main session, skip it and start with `/spec`.
 
-상세 프로세스는 각 커맨드 파일 참고 (`.claude/commands/`)
+See each command file for detailed process (`.claude/commands/`)
 
-## 핵심 규칙
+## Core Rules
 
-- 세션 식별자는 kebab-case: `auth-login`, `player-movement`
-- `/spec`부터 `.worktrees/{title}`에서 작업 (메인 브랜치 직접 수정 금지). `/brainstorm`은 메인에서 실행.
-- Evaluator는 반드시 Generator와 다른 세션에서 실행
-- 검증 게이트 강제 — 게이트 정의는 `.claude/rules/verify-commands.md` 참조. 코드 영역 기본값: TDD (RED → GREEN → REFACTOR). 테스트가 불가능한 영역(UI 레이아웃, 에셋, 밸런싱 수치 등)은 대체 검증 수단을 스펙의 검증 기준에 명시하고, 핸드오프에 사유를 기록할 것.
-- `/simplify`로 diff 기반 코드 리뷰 — **세션당 최소 1회 필수** + 매 2-3 태스크당 1회 (결과는 핸드오프 REVIEW 로그에 기록). 태스크 수가 적어도 면제되지 않음.
-- VERIFY 통과 전 핸드오프 금지
-- 독립 작업은 항상 병렬 실행
-- 참고 자료(specs/handoffs/evaluation 등)는 필요한 부분만 인용 — 요약·재작성 금지
+- Session identifiers use kebab-case: `auth-login`, `player-movement`
+- All work from `/spec` onward happens in `.worktrees/{title}` (no direct modification of the main branch). `/brainstorm` runs on main.
+- Evaluator must run in a different session from Generator
+- Verification gates are enforced — gate definitions in `.claude/rules/verify-commands.md`. Default for code: TDD (RED → GREEN → REFACTOR). For areas where testing is not feasible (UI layout, assets, balance values, etc.), specify alternative verification methods in the spec's acceptance criteria and record the reason in the handoff.
+- `/simplify` diff-based code review — **minimum once per session** + once every 2-3 tasks (record results in the handoff REVIEW log). Not exempt even if task count is small.
+- No handoff before VERIFY passes
+- Independent tasks always run in parallel
+- Reference materials (specs/handoffs/evaluation, etc.) — quote only the relevant portion; never summarize or rewrite
 
-## 서브에이전트 출력 계약
+## Sub-agent Output Contract
 
-모든 서브에이전트(SCOPE, REVIEW 등)는 메인 세션 컨텍스트를 보호하기 위해 다음 규칙을 따름:
+All sub-agents (SCOPE, REVIEW, etc.) follow these rules to protect the main session context:
 
-- **Bullet-only 반환**: bullet 리스트로만 반환. raw 코드·파일 내용 덤프 금지. 코드 스니펫은 3줄 이내.
-- **15 bullet 상한**: 에이전트당 최대 15개 bullet. 초과 시 우선순위 top 15로 선별.
-- **파일 직접 쓰기 우선**: 결과가 파일(핸드오프/평가/회고)에 저장될 것이라면, 서브에이전트가 직접 append하고 메인에는 "완료 Y/N + critical 여부"만 보고.
-- **문서 요약 금지**: 참고 자료는 필요한 부분만 인용. 요약·재작성 금지.
+- **Bullet-only returns**: Return as bullet lists only. No raw code or file content dumps. Code snippets max 3 lines.
+- **15 bullet cap**: Maximum 15 bullets per agent. If exceeded, select the top 15 by priority.
+- **Write to file first**: If results will be saved to a file (handoff/evaluation/reflection), the sub-agent writes directly and reports only "done Y/N + critical or not" to main.
+- **No document summarization**: Quote only the relevant parts of reference materials. Never summarize or rewrite.
 
-> 상태 머신, 디렉토리 구조, 세미-자동화(Stop hook) 상세 설명은 `.claude/docs/workflow-reference.md` 참조.
+> For state machine, directory structure, and semi-automation (Stop hook) details, see `.claude/docs/workflow-reference.md`.

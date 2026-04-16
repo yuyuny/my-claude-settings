@@ -125,14 +125,14 @@ fi
 case "$STATE" in
   spec_draft)
     NEXT_CMD="claude \"/spec $TITLE\""
-    NOTIFY_MSG="$TITLE: brainstorm 완료 — /spec 을 실행하세요"
+    NOTIFY_MSG="$TITLE: brainstorm complete — run /spec"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: spec_draft
-brainstorms/$TITLE.md 커밋됨. 다음 단계:
+brainstorms/$TITLE.md committed. Next step:
 
-  claude "/spec $TITLE"   ← 클립보드에 복사됨
+  claude "/spec $TITLE"   ← copied to clipboard
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -140,15 +140,15 @@ EOF
 
   spec_ready)
     NEXT_CMD="claude \"/generate $TITLE\""
-    NOTIFY_MSG="$TITLE: ⚠️  spec 검토 후 /generate 실행"
+    NOTIFY_MSG="$TITLE: ⚠️  review spec then run /generate"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: spec_ready
-⚠️  승인 게이트: specs/$TITLE.md 를 검토하세요.
+⚠️  Approval gate: review specs/$TITLE.md.
 
-  내용이 맞다면: claude "/generate $TITLE"   ← 클립보드에 복사됨
-  수정이 필요하다면: /spec $TITLE 다시 실행
+  If content looks good: claude "/generate $TITLE"   ← copied to clipboard
+  If changes needed: re-run /spec $TITLE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -161,41 +161,41 @@ EOF
 
   handoff_ready)
     NEXT_CMD="claude \"/evaluate $TITLE\""
-    NOTIFY_MSG="$TITLE: handoff 완료 — 새 세션에서 /evaluate 실행"
+    NOTIFY_MSG="$TITLE: handoff complete — run /evaluate in a new session"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: handoff_ready
-handoff 완성 + VERIFY PASS 확인됨. 다음 단계:
+Handoff complete + VERIFY PASS confirmed. Next step:
 
-  claude "/evaluate $TITLE"   ← 클립보드에 복사됨
-  (별도 세션 필수 — Evaluator 독립성 원칙)
-  새 터미널 탭(Cmd+\\ in VSCode / Cmd+T in iTerm) 열고 Cmd+V
+  claude "/evaluate $TITLE"   ← copied to clipboard
+  (separate session required — Evaluator independence principle)
+  Open a new terminal tab (Cmd+\\ in VSCode / Cmd+T in iTerm) and Cmd+V
 
-이후: /reflect $TITLE  (같은 세션 가능)
+After: /reflect $TITLE  (same session is fine)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
     ;;
 
   evaluated_pass)
-    NOTIFY_MSG="$TITLE: ✅ PASS — /reflect 먼저, 그 다음 머지"
+    NOTIFY_MSG="$TITLE: ✅ PASS — /reflect first, then merge"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: evaluated_pass
-✅ 승인 게이트: Evaluator PASS.
+✅ Approval gate: Evaluator PASS.
 
-순서를 반드시 지키세요 (worktree 삭제 전 /reflect 필요):
+Follow this order (worktree needed for /reflect before deleting):
 
-  ① claude "/reflect $TITLE"   ← 클립보드에 복사됨
-     (worktree 안 산출물 참조 — 머지 전에 실행)
+  ① claude "/reflect $TITLE"   ← copied to clipboard
+     (references worktree artifacts — run before merging)
 
-  ② 머지 + 정리 (reflect 완료 후):
+  ② Merge + cleanup (after reflect completes):
      .claude/scripts/workflow-advance.sh merge $TITLE
      .claude/scripts/workflow-advance.sh cleanup $TITLE
 
-  또는 수동:
+  Or manually:
      git checkout main && git merge $TITLE
      git worktree remove .worktrees/$TITLE && git branch -d $TITLE
 
@@ -205,16 +205,16 @@ EOF
     ;;
 
   evaluated_fail)
-    NOTIFY_MSG="$TITLE: ❌ FAIL — 재작업 여부 결정 필요"
+    NOTIFY_MSG="$TITLE: ❌ FAIL — decision required on rework"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: evaluated_fail
-❌ 승인 게이트: Evaluator FAIL. evaluation/$TITLE.md 를 읽고 결정하세요.
+❌ Approval gate: Evaluator FAIL. Read evaluation/$TITLE.md and decide.
 
-  재작업:       claude "/generate $TITLE"   (Generator가 evaluation 피드백 반영)
-  스펙 재정의:  claude "/spec $TITLE"
-  포기:         수동으로 worktree 정리
+  Rework:          claude "/generate $TITLE"   (Generator applies evaluation feedback)
+  Redefine spec:   claude "/spec $TITLE"
+  Abandon:         manually clean up worktree
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -225,16 +225,16 @@ EOF
     ;;
 
   done)
-    NOTIFY_MSG="$TITLE: 🎉 사이클 완료 — worktree 정리하세요"
+    NOTIFY_MSG="$TITLE: 🎉 cycle complete — clean up worktree"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: done
-🎉 전체 사이클 완료 (brainstorm → reflect).
-reflections/ 에 회고가 기록되었습니다.
+🎉 Full cycle complete (brainstorm → reflect).
+Reflection has been recorded in reflections/.
 
-워크트리가 아직 남아있다면 정리하세요:
-  .claude/scripts/workflow-advance.sh merge $TITLE    # (미머지 시)
+If the worktree is still around, clean it up:
+  .claude/scripts/workflow-advance.sh merge $TITLE    # (if not yet merged)
   .claude/scripts/workflow-advance.sh cleanup $TITLE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

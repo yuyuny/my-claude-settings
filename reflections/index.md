@@ -1,20 +1,20 @@
 # Reflections Index
 
-> `/reflect` 실행 시 이 파일의 테이블에 새 항목을 추가합니다.
-> `/reflect-batch` 실행 시 마지막 집계 날짜를 업데이트합니다.
+> When running `/reflect`, append a new entry to the table in this file.
+> When running `/reflect-batch`, update the last aggregation date.
 
-**마지막 배치 집계**: _(미실행)_
-
----
-
-## 인덱스
-
-_(미집계)_
+**Last batch aggregation**: _(not yet run)_
 
 ---
 
-## 반복 패턴 메모
+## Index
 
-> `/reflect-batch` 실행 후 여기에 집계 결과를 기록합니다.
+_(not yet aggregated)_
 
-_(미집계)_
+---
+
+## Recurring Pattern Notes
+
+> Record aggregation results here after running `/reflect-batch`.
+
+_(not yet aggregated)_
