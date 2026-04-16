@@ -29,13 +29,7 @@ Immediately after deciding the title, record `brainstorming` state:
 ### Step 2: Parallel SCOPE (sonnet × 2~3)
 
 If an existing codebase is present, use parallel exploration agents to identify the scope of impact.
-
-```
-Launch parallel (sonnet):
-  1. Explore related files/module structure → `path/file — reason`
-  2. Check existing patterns/conventions   → `path/file — which pattern`
-  3. Analyze dependencies/impact scope     → `path/file — impact direction`
-```
+Standard pattern: see `.claude/docs/scope-pattern.md`.
 
 SCOPE results are cited as code evidence in Step 3 questions.
 

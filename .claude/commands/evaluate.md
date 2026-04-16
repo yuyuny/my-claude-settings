@@ -66,8 +66,9 @@ State the rubric version at the top of the evaluation file. (If `rubric-v1.md` i
 
 ### Step 6: Verdict
 
-- **Weighted average ≥ 7.0 + all items ≥ 5.0 + all VERIFY gates passed**: → PASS
-- **Otherwise**: → FAIL + specific improvement feedback
+Apply the PASS criteria defined in `../../evaluation/rubric-v1.md` (already read in Step 5).
+- **PASS**: weighted average and per-item minimums met + all VERIFY gates passed
+- **FAIL**: anything below threshold → write specific improvement feedback
 
 ### Step 6.5: Record Workflow State
 
@@ -97,46 +98,8 @@ Do not modify the specs file on a FAIL verdict.
 
 ## Output Format
 
-Save to `evaluation/{title}.md` inside the worktree (path: `.worktrees/{title}/evaluation/{title}.md`):
-
-```markdown
-# Evaluation: {session title}
-
-> Rubric: v1.0 (`../../evaluation/rubric-v1.md`)
-
-## Deliverable Comparison
-<!-- Produced directly by the evaluator. -->
-| Deliverable | Spec criteria | Handoff status | Missing Y/N |
-|---|---|---|---|
-
-## Verdict: PASS / FAIL
-
-## VERIFY Re-validation
-- Tests: {result}
-- Typecheck: {result}
-- Lint: {result}
-- Build: {result}
-
-## Scorecard
-| Criteria | Score | Evidence |
-|---|---|---|
-| Feature completeness | {n}/10 | {1-2 sentences} |
-| Code quality | {n}/10 | {1-2 sentences} |
-| Design/UX | {n}/10 | {1-2 sentences} |
-| Edge cases | {n}/10 | {1-2 sentences} |
-| **Weighted average** | **{n}/10** | |
-
-## Strengths (max 5)
-- {what went well}
-
-## Needs Improvement (required on FAIL)
-- [ ] {specific fix 1}: {where, what, why}
-- [ ] {specific fix 2}: ...
-
-## Verification Log (max 5, no raw output dump — summaries only)
-- Test run results: {N passed / N failed}
-- Behavior check: {scenario checked and PASS/FAIL}
-```
+Save to `.worktrees/{title}/evaluation/{title}.md` following the template
+in `.claude/docs/templates/evaluation.md`. **Read the template before writing.**
 
 ## Evaluation Attitude Rules
 - **Default skepticism**: Doubt what Generator claims as "complete"

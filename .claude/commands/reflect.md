@@ -35,7 +35,7 @@ Create file `reflections/YYYY-MM-DD-HHmm-{title}.md`.
 
 ### Step 3.5: Update Index
 
-1. Add new domain terms to `docs/GLOSSARY.md` only if existing entries are present (skip if the file is empty)
+1. Update `docs/GLOSSARY.md` with new domain terms if needed (rule: `.claude/rules/multi-agent-workflow.md`)
 2. If `reflections/index.md` exists, append one new row to the table (skip if the file doesn't exist):
 
    ```

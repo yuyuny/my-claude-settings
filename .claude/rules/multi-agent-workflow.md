@@ -1,28 +1,6 @@
 # Multi-Agent Workflow
 
-## Model Assignment
-
-| Task                  | Model                    |
-| --------------------- | ------------------------ |
-| Exploration (SCOPE)   | `sonnet` — 2~3 in parallel |
-| Implementation (IMPLEMENT) | `sonnet`            |
-| Review (REVIEW)       | `opus`                   |
-| Brainstorming         | `opus`                   |
-| Spec Writing          | `sonnet`                 |
-| Evaluation            | `opus`                   |
-| Reflection            | `sonnet`                 |
-
-> Main session assumes `sonnet`. Running `/generate` with `opus` significantly increases cost across the IMPLEMENT/PLAN phases.
-
-## Workflow
-
-`/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
-
-`/gen-eva` — Chains `/generate` and `/evaluate` in one session. On FAIL, performs 1 rework cycle and re-evaluates. Escalates to user after 2 consecutive FAILs.
-
-`/brainstorm` is optional, not the default. If requirements are already clear in the main session, skip it and start with `/spec`.
-
-See each command file for detailed process (`.claude/commands/`)
+> Model assignments, workflow diagram, and state machine details: `.claude/docs/workflow-reference.md`
 
 ## Core Rules
 
@@ -34,14 +12,11 @@ See each command file for detailed process (`.claude/commands/`)
 - No handoff before VERIFY passes
 - Independent tasks always run in parallel
 - Reference materials (specs/handoffs/evaluation, etc.) — quote only the relevant portion; never summarize or rewrite
+- Glossary: add new domain terms to `docs/GLOSSARY.md` only if existing entries are present (skip if empty)
 
 ## Sub-agent Output Contract
 
-All sub-agents (SCOPE, REVIEW, etc.) follow these rules to protect the main session context:
-
-- **Bullet-only returns**: Return as bullet lists only. No raw code or file content dumps. Code snippets max 3 lines.
-- **15 bullet cap**: Maximum 15 bullets per agent. If exceeded, select the top 15 by priority.
-- **Write to file first**: If results will be saved to a file (handoff/evaluation/reflection), the sub-agent writes directly and reports only "done Y/N + critical or not" to main.
-- **No document summarization**: Quote only the relevant parts of reference materials. Never summarize or rewrite.
-
-> For state machine, directory structure, and semi-automation (Stop hook) details, see `.claude/docs/workflow-reference.md`.
+- **Bullet-only returns**: No raw code or file content dumps. Code snippets max 3 lines.
+- **15 bullet cap**: Maximum 15 bullets per agent. Select top 15 by priority if exceeded.
+- **Write to file first**: Sub-agent writes directly, reports only "done Y/N + critical or not" to main.
+- **No document summarization**: Quote only relevant parts. Never summarize or rewrite.

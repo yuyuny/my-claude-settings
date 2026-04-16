@@ -1,20 +1,13 @@
 # Verify Commands
 
-Defines the verification gates to run in Generator Step 5 and Evaluator Step 2.
-Replacing only this file makes the same workflow work for any stack or domain.
+Verification gates for Generator Step 5 and Evaluator Step 2.
 
-## Execution Rules (applies to all sub-agents)
-
-- Build/test/lint/typecheck and other language runtime binaries must **always be invoked via the project package manager**.
-- **Node/pnpm stack**: Use `pnpm <script>` or `pnpm exec <bin>`. Direct invocation of `npx`, `node <binary>`, or binaries like `vitest`, `tsc`, `eslint`, `prettier`, `stylelint`, `oxlint`, `tsx` is **prohibited**.
-- Reason: git worktrees do not share the main repository's `node_modules`. Direct invocation fails to find `.bin` PATH, resulting in `command not found` or `MODULE_NOT_FOUND`.
-- Exception: Inline snippets like `node -e "..."` are allowed (not invoking a file binary).
-- The same principle applies to other stacks: route through the package manager (e.g., `poetry run`, `go run`).
+> **Always invoke binaries via the project package manager** (worktrees don't share `node_modules`).
+> Details and rationale: `.claude/docs/verify-commands-guide.md`
 
 ## Current Project Gates
 
 > **Modify this section to match your project stack.**
-> Default is Node/pnpm.
 
 ```bash
 pnpm test:run   # tests
@@ -22,11 +15,6 @@ pnpm typecheck  # type check
 pnpm lint       # lint
 pnpm build      # build (if applicable)
 ```
-
-## Stack Reference Examples
-
-> See `.claude/docs/verify-commands-examples.md` for other stack examples.
-> Open it only during project setup; keep only the current project gates in this file.
 
 ## Rules
 

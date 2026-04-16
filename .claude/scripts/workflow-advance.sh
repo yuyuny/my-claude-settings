@@ -11,6 +11,8 @@
 
 set -euo pipefail
 
+command -v python3 &>/dev/null || { echo "[workflow] ERROR: python3 is required but not found in PATH"; exit 1; }
+
 # Resolve main repo root (works from worktrees too)
 get_main_root() {
   local git_common_dir
@@ -96,17 +98,33 @@ if [[ -n "${CLAUDE_WORKFLOW_TITLE:-}" ]]; then
   SESSION_FILE="$WORKFLOW_DIR/${TITLE}.json"
 else
   # Fallback: most recently modified session file that is NOT in 'done' state
-  SESSION_FILE=""
+  ACTIVE_COUNT=0
+  FIRST_ACTIVE=""
   for f in $(ls -t "$WORKFLOW_DIR"/*.json 2>/dev/null || true); do
     file_state=$(python3 -c "import json,sys; d=json.load(open('$f')); print(d.get('state',''))" 2>/dev/null || true)
     if [[ "$file_state" != "done" ]]; then
-      SESSION_FILE="$f"
-      break
+      ACTIVE_COUNT=$((ACTIVE_COUNT + 1))
+      if [[ -z "$FIRST_ACTIVE" ]]; then
+        FIRST_ACTIVE="$f"
+      fi
     fi
   done
-  if [[ -z "$SESSION_FILE" ]]; then
+
+  if [[ "$ACTIVE_COUNT" -eq 0 ]]; then
     exit 0  # No active (non-done) workflow session, nothing to do
   fi
+
+  if [[ "$ACTIVE_COUNT" -ge 2 ]]; then
+    cat <<WARNEOF
+
+⚠️  $ACTIVE_COUNT active sessions detected but CLAUDE_WORKFLOW_TITLE is not set.
+   Showing guidance for the most recent session. To target a specific session:
+     export CLAUDE_WORKFLOW_TITLE="{title}"
+
+WARNEOF
+  fi
+
+  SESSION_FILE="$FIRST_ACTIVE"
   TITLE=$(basename "$SESSION_FILE" .json)
 fi
 
@@ -205,6 +223,7 @@ EOF
     ;;
 
   evaluated_fail)
+    NEXT_CMD="claude \"/generate $TITLE\""
     NOTIFY_MSG="$TITLE: ❌ FAIL — decision required on rework"
     cat <<EOF
 
@@ -212,7 +231,7 @@ EOF
 [workflow] $TITLE — state: evaluated_fail
 ❌ Approval gate: Evaluator FAIL. Read evaluation/$TITLE.md and decide.
 
-  Rework:          claude "/generate $TITLE"   (Generator applies evaluation feedback)
+  Rework:          claude "/generate $TITLE"   ← copied to clipboard
   Redefine spec:   claude "/spec $TITLE"
   Abandon:         manually clean up worktree
 
@@ -286,6 +305,7 @@ After reflect-batch, clean up the worktree:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
     else
+      NEXT_CMD=".claude/scripts/workflow-advance.sh merge $TITLE && .claude/scripts/workflow-advance.sh cleanup $TITLE"
       cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -294,7 +314,7 @@ EOF
 Reflection has been recorded in reflections/. ($UNPROCESSED unprocessed total)
 
 If the worktree is still around, clean it up:
-  .claude/scripts/workflow-advance.sh merge $TITLE    # (if not yet merged)
+  .claude/scripts/workflow-advance.sh merge $TITLE    # (if not yet merged)   ← copied to clipboard
   .claude/scripts/workflow-advance.sh cleanup $TITLE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

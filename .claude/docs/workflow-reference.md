@@ -1,7 +1,35 @@
 # Workflow Reference
 
 Core rules in `.claude/rules/multi-agent-workflow.md`.
-This file contains detailed information on the state machine, directory structure, and semi-automation.
+This file contains detailed information on model assignments, workflow flow, state machine, directory structure, and semi-automation.
+
+---
+
+## Model Assignment
+
+| Task                  | Model                    |
+| --------------------- | ------------------------ |
+| Exploration (SCOPE)   | `sonnet` — 2~3 in parallel |
+| Implementation (IMPLEMENT) | `sonnet`            |
+| Review (REVIEW)       | `opus`                   |
+| Brainstorming         | `opus`                   |
+| Spec Writing          | `sonnet`                 |
+| Evaluation            | `opus`                   |
+| Reflection            | `sonnet`                 |
+
+> Main session assumes `sonnet`. Running `/generate` with `opus` significantly increases cost across the IMPLEMENT/PLAN phases.
+
+---
+
+## Workflow Flow
+
+`/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
+
+`/gen-eva` — Chains `/generate` + `/evaluate` in one session. On FAIL, performs 1 rework cycle and re-evaluates. Escalates to user after 2 consecutive FAILs.
+
+`/brainstorm` is optional, not the default. If requirements are already clear in the main session, skip it and start with `/spec`.
+
+See each command file for detailed process (`.claude/commands/`)
 
 ---
 

@@ -12,7 +12,7 @@ Reads the spec and implements following the established workflow (SCOPE→PLAN�
 ### Step 0: Workspace Setup
 
 `/spec` has already created the worktree, so navigate to it and verify the spec file exists.
-Replace the dependency install command in the block below with the **default for your project stack**. Default is Node/pnpm; see block comments for other stack examples.
+Replace the dependency install command in the block below with the **default for your project stack**. Default is Node/pnpm. See `.claude/docs/verify-commands-guide.md` for package manager rules and stack examples.
 
 ```bash
 cd .worktrees/{title}
@@ -47,13 +47,7 @@ Use parallel exploration agents to identify the scope of impact before implement
    - *(Paths are from the same branch — no risk of drift.)*
 
 3. **Normal run — spec Affected Paths are sparse or absent**: Run full parallel SCOPE.
-
-```
-Launch parallel (sonnet):
-  Agent 1: Explore affected files/modules → `path/file — reason`
-  Agent 2: Check existing test coverage (skip if none) → `test_file — scope`
-  Agent 3: Trace state flow/dependencies (based on spec "Affected Paths", including alternative paths)
-```
+   Standard pattern: see `.claude/docs/scope-pattern.md`. Agent 2 focus: existing test coverage. Agent 3 focus: state flow/dependency trace.
 
 ### Step 2: PLAN — Micro-task Breakdown
 Break the deliverables in `specs/{title}.md` into **2~5 minute tasks**.
@@ -120,47 +114,8 @@ After writing, record workflow state:
 
 ## Handoff Writing Rules
 
-`handoffs/{title}.md` must include:
-
-```markdown
-# Handoff: {session title}
-
-## Task Breakdown
-<!-- Pre-written in Step 2 PLAN. Record directly here. -->
-- Task 1: {description}
-- Task 2: {description}
-- ...
-
-## Completed Deliverables
-- [x] Deliverable 1: {completion status summary}
-- [x] Deliverable 2: ...
-- [ ] Deliverable 3: {reason if incomplete}
-
-## Design Notes (if applicable)
-- Key decisions: {decision — rationale}
-- Constraints: {trade-offs or technical debt}
-
-## Known Gotchas (omit section if none)
-- {Traps the next agent might miss — implicit side effects, duplicate paths, ordering dependencies}
-- e.g., "Feature X bypasses the standard pipeline and calls a separate storage path — that path also needs updating"
-
-## REVIEW Log
-<!-- Minimum 1 entry per session required. Handoff is incomplete if empty. -->
-- Round 1 (required, after tasks 1-3 or before session end): {issue in 80 chars or "none"} / {fix commit hash + 1 line or "-"}
-- Round 2 (optional, after tasks 4-6): ...
-<!-- Round 4+: omit rounds with no issues. /simplify sub-agent appends directly. -->
-
-## VERIFY Results
-- Tests: {n passed / 0 failed}
-- Typecheck: PASS
-- Lint: PASS
-- Build: PASS
-- How to run: `{test command}`
-
-## How to Verify Behavior
-- `{run command}`
-- {key scenarios to check}
-```
+`handoffs/{title}.md` must follow the template in `.claude/docs/templates/handoff.md`.
+**Read the template before writing.** Include all required sections.
 
 ## Rules
 - Do not add features not in the spec (prevent scope creep)

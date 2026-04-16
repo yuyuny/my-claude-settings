@@ -44,13 +44,7 @@ git worktree add .worktrees/{title} -b {title}
 
 - **If brainstorms/{title}.md exists**: **Copy** the "Affected Paths" section directly into the spec. Do not re-run exploration agents.
 - **If not**: Use parallel exploration agents (sonnet × 2~3) to identify the scope of impact.
-
-  ```
-  Launch parallel (sonnet):
-    1. Explore related files/module structure → `path/file — reason`
-    2. Check existing patterns/conventions   → `path/file — which pattern`
-    3. Analyze dependencies/impact scope     → `path/file — impact direction`
-  ```
+  Standard pattern: see `.claude/docs/scope-pattern.md`.
 
 ### Step 3: Finalize Session Title
 
@@ -92,50 +86,8 @@ Run inside the worktree (the script auto-detects git root):
 
 ## Output Format
 
-```markdown
-# Spec: {session title}
-
-## Goal
-
-{1-2 sentence summary}
-
-## Deliverables
-
-- [ ] Deliverable 1: {described from the user's perspective}
-- [ ] Deliverable 2: ...
-
-## Acceptance Criteria (shared with Evaluator)
-
-1. {concrete, verifiable condition}
-2. {e.g., "Response within 1 frame after player input"}
-3. {e.g., "Error handling exists at all entry points"}
-
-## Verification Criteria (VERIFY)
-
-> Based on the gates defined in `.claude/rules/verify-commands.md`.
-
-- [ ] {gate 1 — e.g., all tests pass}
-- [ ] {gate 2 — e.g., build passes}
-- [ ] {include only applicable gates}
-
-## Affected Paths
-
-- Primary path: {the standard execution path for the feature. e.g., main entry function → core handler → repository}
-- Alternative paths: {non-primary paths yielding the same result — bypasses or special branches. e.g., a shortcut that skips the standard pipeline under certain conditions}
-- Interconnected systems: {side systems that must also be updated. e.g., logging/analytics, i18n (if any), docs, external catalogs}
-
-## Technical Constraints
-
-- {stack, compatibility, performance requirements, etc.}
-
-## Non-functional Requirements
-
-- {accessibility, security, performance thresholds, etc.}
-
-## Dependencies
-
-- Preceding session: {none or previous session title}
-```
+Create `specs/{title}.md` following the template in `.claude/docs/templates/spec.md`.
+**Read the template before writing.** Include all sections.
 
 ## Rules
 
@@ -144,7 +96,6 @@ Run inside the worktree (the script auto-detects git root):
 - If a previous session's `evaluation/{title}.md` exists, it must be reflected
 - Scope expansion proposals allowed: if there are additional features aligned with user goals, propose including them in deliverables, but do not add to the final spec without user approval
 - **Affected paths required**: List alternative execution paths for each major deliverable (missing this risks FAIL at implementation stage)
-- Add new domain terms to `docs/GLOSSARY.md` only if existing entries are present (skip if the file is empty)
 
 ## Final Output
 After committing, output a single summary line with a clickable link:
