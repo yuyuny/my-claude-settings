@@ -1,101 +1,76 @@
-# Spec Writer Agent (sonnet)
+# Spec Writer Agent (opusplan)
 
-Reads the brainstorming artifact (`brainstorms/{title}.md`) and converts it into a formal spec document.
-This command runs with the `sonnet` model — the goal is filling a defined template and refining deliverables.
-
-If requirements are ambiguous, run `/brainstorm` (opus) first.
-If requirements are already clearly defined in the main session, you can run this directly without `/brainstorm`.
+Converts requirements into a formal spec document.
+If requirements are ambiguous, ask clarifying questions (max 2) before writing.
+If requirements are already clearly defined in the main session, write immediately.
 
 ## Token Guard
 
-- Without `/brainstorm`: maximum **2** clarifying questions. Start writing the spec immediately after receiving answers — no further questions.
-- **Commit immediately** after writing the spec — no additional analysis or expansion.
+- Maximum **2** clarifying question rounds. Write the spec immediately after — no further questions.
+- **Commit immediately** after writing the spec.
 - Artifact target: **≤ 60 lines**. Reduce deliverable scope or compress sections if exceeded.
 
 ## Process
 
-### Step 1: Determine Input
+### Step 1: Clarify Requirements
 
-- If `brainstorms/{title}.md` exists → use it as primary input (do not re-run SCOPE)
-- If not → use main session context as primary input. Ask 1~2 short clarifying questions and write immediately.
+- If requirements are clear → skip to Step 1.5.
+- If ambiguous → ask up to 2 targeted questions. Focus on: scope boundaries, success criteria, key constraints.
+  - If a codebase exists, run parallel SCOPE first (see Step 2) to ask evidence-based questions.
 
 ### Step 1.5: Create Worktree
 
-All artifacts from `/spec` onward (spec, handoffs, evaluation, reflections) are managed in a worktree branch.
+All artifacts from `/spec` onward are managed in a worktree branch.
 
 **First run:**
 ```bash
 git worktree add .worktrees/{title} -b {title}
 ```
 
-**Rework scenarios:**
-
-- **Spec redefinition after `evaluated_fail`**: The worktree already exists, so just `cd .worktrees/{title}`. Update only the spec on top of the existing code. Generator can reference the previous implementation for rework.
-- **Full restart (branch reset)**: Execute only if explicitly requested.
-  ```bash
-  git worktree remove .worktrees/{title}
-  git branch -D {title}
-  git worktree add .worktrees/{title} -b {title}
-  ```
+**Rework after `evaluated_fail`**: worktree already exists — just `cd .worktrees/{title}` and update the spec.
 
 **All subsequent steps run inside `.worktrees/{title}`.**
 
 ### Step 2: SCOPE
 
-- **If brainstorms/{title}.md exists**: **Copy** the "Affected Paths" section directly into the spec. Do not re-run exploration agents.
-- **If not**: Use parallel exploration agents (sonnet × 2~3) to identify the scope of impact.
-  Standard pattern: see `.claude/docs/scope-pattern.md`.
+If a codebase exists, identify the scope of impact before writing the spec.
+
+- Use parallel exploration agents (see `.claude/docs/scope-pattern.md`).
+- Copy the "Affected Paths" result directly into the spec.
 
 ### Step 3: Finalize Session Title
 
-- If brainstorms/{title}.md exists, use its title as-is.
-- If not, decide a kebab-case title (`auth-login`, `dashboard-charts`, etc.)
+Decide a kebab-case title: `auth-login`, `dashboard-charts`, `payment-stripe`.
 
 ### Step 4: Write Spec
 
-Create `specs/{title}.md` using the output format below.
+Create `specs/{title}.md` following the template in `.claude/docs/templates/spec.md`.
+**Read the template before writing.** Include all sections.
 
-**Write around deliverables** — implementation details (which function, which pattern) are for Generator.
-If Spec Writer specifies implementation methods, errors can cascade.
+**Write around deliverables** — implementation details are for Generator.
 
-### Step 5: Sprint Contract
-
-Define a clear "Definition of Done" for each sprint.
-This criteria will be used identically by the Evaluator later.
-
-**Also include verification criteria**: whether build, tests, typecheck, and lint pass.
-
-### Step 6: Commit Spec
-
-Run inside `.worktrees/{title}`:
+### Step 5: Commit Spec
 
 ```bash
 git add specs/{title}.md
 git commit -m "docs: add spec for {title}"
 ```
 
-**Note**: Stage only `specs/{title}.md`. Do not commit any other changes.
+Stage only `specs/{title}.md`.
 
-### Step 7: Record Workflow State
-
-Run inside the worktree (the script auto-detects git root):
+### Step 6: Record Workflow State
 
 ```bash
 ../../.claude/scripts/workflow-advance.sh record {title} spec_ready spec specs/{title}.md
 ```
 
-## Output Format
-
-Create `specs/{title}.md` following the template in `.claude/docs/templates/spec.md`.
-**Read the template before writing.** Include all sections.
-
 ## Rules
 
 - 3~7 deliverables per sprint
-- No subjective language in acceptance criteria ("good UX" ✗ → "feedback within 1 second of button click" ✓)
-- If a previous session's `evaluation/{title}.md` exists, it must be reflected
-- Scope expansion proposals allowed: if there are additional features aligned with user goals, propose including them in deliverables, but do not add to the final spec without user approval
-- **Affected paths required**: List alternative execution paths for each major deliverable (missing this risks FAIL at implementation stage)
+- No subjective language in acceptance criteria ("good UX" ✗ → "feedback within 1 second" ✓)
+- **Affected paths required**: list alternative execution paths for each major deliverable
+- Scope expansion proposals allowed but require user approval before adding to spec
+- If a previous `evaluation/{title}.md` exists, reflect its feedback
 
 ## Final Output
 After committing, output a single summary line with a clickable link:

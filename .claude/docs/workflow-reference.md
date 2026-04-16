@@ -7,27 +7,27 @@ This file contains detailed information on model assignments, workflow flow, sta
 
 ## Model Assignment
 
-| Task                  | Model                    |
-| --------------------- | ------------------------ |
-| Exploration (SCOPE)   | `sonnet` — 2~3 in parallel |
-| Implementation (IMPLEMENT) | `sonnet`            |
-| Review (REVIEW)       | `opus`                   |
-| Brainstorming         | `opus`                   |
-| Spec Writing          | `sonnet`                 |
-| Evaluation            | `opus`                   |
-| Reflection            | `sonnet`                 |
+All commands run with the session's active model (`opusplan` by default).
+Sub-agents launched via the Agent tool also inherit the active model unless overridden.
 
-> Main session assumes `sonnet`. Running `/generate` with `opus` significantly increases cost across the IMPLEMENT/PLAN phases.
+| Task | Notes |
+|------|-------|
+| SCOPE (parallel exploration) | Sub-agents — 2~3 in parallel |
+| Implementation | Main session |
+| REVIEW (`/simplify`) | Sub-agent |
+| Spec writing | Main session |
+| Evaluation | Separate session (independence requirement) |
+| Reflection | Main session |
+
+> Using a cheaper model (e.g., sonnet) for the main session significantly reduces cost across long IMPLEMENT phases. Change `"model"` in `settings.json` to adjust.
 
 ---
 
 ## Workflow Flow
 
-`/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
+`/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
 
 `/gen-eva` — Chains `/generate` + `/evaluate` in one session. On FAIL, performs 1 rework cycle and re-evaluates. Escalates to user after 2 consecutive FAILs.
-
-`/brainstorm` is optional, not the default. If requirements are already clear in the main session, skip it and start with `/spec`.
 
 See each command file for detailed process (`.claude/commands/`)
 
@@ -56,21 +56,15 @@ The remaining transitions (brainstorm→spec, spec→generate, reflect→done) a
 ## State Machine
 
 ```
-# With /brainstorm:
-idle → brainstorming → spec_draft → spec_ready → generating
-                                              → handoff_ready → evaluating → evaluated_pass → reflecting → done
-                                                                           → evaluated_fail  (human decides: rework / redefine spec / abandon)
-
-# Without /brainstorm (run /spec directly): idle → spec_ready (brainstorming/spec_draft skipped)
+idle → spec_ready → generating → handoff_ready → evaluated_pass → reflecting → done
+                                               → evaluated_fail  (human decides: rework / redefine spec / abandon)
 
 # /gen-eva shortcut (generate + evaluate + 1 rework in one session):
 # spec_ready → generating → handoff_ready → [evaluator sub-agent] → evaluated_pass → (human: /reflect)
 #                                                                  → evaluated_fail → generating (rework) → handoff_ready → [evaluator sub-agent] → evaluated_pass / evaluated_fail (escalate to human)
 ```
 
-- `brainstorming`: recorded immediately after `/brainstorm` Step 1 (title decided)
-- `spec_draft`: recorded after `/brainstorm` completes — intermediate state before `/spec` is run
-- `spec_ready`: recorded after `/spec` completes (regardless of whether brainstorm ran)
+- `spec_ready`: recorded after `/spec` completes
 
 State is recorded in `.claude-workflow/sessions/{title}.json` (gitignored, local only).
 Check current state: `/workflow-status`
@@ -90,7 +84,6 @@ Multiple `{title}` sessions can run in parallel without conflicts:
 
 - `.worktrees/` — git worktree workspace (.gitignore added)
 - `.claude-workflow/` — workflow execution state (gitignored, local only)
-- `brainstorms/` — Brainstormer artifacts. Committed to **main branch**. (absent if `/brainstorm` was skipped)
 
 The following directories are created inside **worktree branches** (`.worktrees/{title}/`):
 - `specs/` — written by `/spec`. Generator must not modify. Evaluator only updates checkboxes after PASS.

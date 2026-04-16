@@ -141,21 +141,6 @@ fi
 
 # --- State-based guidance ---
 case "$STATE" in
-  spec_draft)
-    NEXT_CMD="claude \"/spec $TITLE\""
-    NOTIFY_MSG="$TITLE: brainstorm complete — run /spec"
-    cat <<EOF
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[workflow] $TITLE — state: spec_draft
-brainstorms/$TITLE.md committed. Next step:
-
-  claude "/spec $TITLE"   ← copied to clipboard
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EOF
-    ;;
-
   spec_ready)
     NEXT_CMD="claude \"/generate $TITLE\""
     NOTIFY_MSG="$TITLE: ⚠️  review spec then run /generate"

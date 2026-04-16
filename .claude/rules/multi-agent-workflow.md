@@ -5,7 +5,7 @@
 ## Core Rules
 
 - Session identifiers use kebab-case: `auth-login`, `player-movement`
-- All work from `/spec` onward happens in `.worktrees/{title}` (no direct modification of the main branch). `/brainstorm` runs on main.
+- All work from `/spec` onward happens in `.worktrees/{title}` (no direct modification of the main branch).
 - Evaluator must run in a different session from Generator
 - Verification gates are enforced — gate definitions in `.claude/rules/verify-commands.md`. Default for code: TDD (RED → GREEN → REFACTOR). For areas where testing is not feasible (UI layout, assets, balance values, etc.), specify alternative verification methods in the spec's acceptance criteria and record the reason in the handoff.
 - `/simplify` diff-based code review — **minimum once per session** + once every 2-3 tasks (record results in the handoff REVIEW log). Not exempt even if task count is small.

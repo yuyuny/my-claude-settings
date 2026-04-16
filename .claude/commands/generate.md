@@ -1,4 +1,4 @@
-# Generator Agent (sonnet + opus)
+# Generator Agent (opusplan)
 
 Reads the spec and implements following the established workflow (SCOPE→PLAN→IMPLEMENT→REVIEW→VERIFY).
 **All work is done inside `.worktrees/{title}`.**
@@ -49,24 +49,21 @@ Use parallel exploration agents to identify the scope of impact before implement
 3. **Normal run — spec Affected Paths are sparse or absent**: Run full parallel SCOPE.
    Standard pattern: see `.claude/docs/scope-pattern.md`. Agent 2 focus: existing test coverage. Agent 3 focus: state flow/dependency trace.
 
-### Step 2: PLAN — Micro-task Breakdown
-Break the deliverables in `specs/{title}.md` into **2~5 minute tasks**.
-Each task must be independently completable and committable.
+### Step 2: PLAN — Task Breakdown
+Break the deliverables in `specs/{title}.md` into independently committable tasks.
 
 Record breakdown results **directly in the "## Task Breakdown" section of `handoffs/{title}.md`** (create the file at this point if it doesn't exist).
 Report only "N tasks / M unclear points" to the main session.
 
-Record unclear points (assumptions) in the handoff's "Known Gotchas" or "## Assumptions" section.
+Record unclear points (assumptions) in the handoff's "Known Gotchas" section.
 Any alternative paths left unverified by SCOPE must be confirmed directly in code before implementation.
 
-### Step 3: IMPLEMENT — TDD Loop (sonnet)
-For each micro-task, follow **RED → GREEN → REFACTOR → commit** order.
-Never implement without tests. Explicitly document areas where testing is not feasible (UI layout, etc.).
+### Step 3: IMPLEMENT
+For each task, write tests where meaningful, implement, then commit.
+Document areas where testing is not feasible (UI layout, game balance values, etc.).
 
-**Context dump timing** — immediately record progress in `handoffs/{title}.md` and hand off to a new session if any of these conditions apply:
-- 5 tasks completed
-- Accumulated Read tool calls exceed 10 (by call count, not file count)
-- 3 or more tasks remaining after completing 1+ REVIEW
+**Context dump timing** — immediately record progress in `handoffs/{title}.md` and hand off to a new session if:
+- 5 or more tasks completed with more remaining
 
 New session resumption procedure:
 ```
@@ -121,7 +118,7 @@ After writing, record workflow state:
 - Do not add features not in the spec (prevent scope creep)
 - Do not modify checkboxes in `specs/{title}.md` — checkboxes are updated by the Evaluator after a PASS verdict
 - Never handoff before VERIFY passes
-- If context dump conditions are met (5 tasks done / 10+ Read calls / 3+ tasks remaining after REVIEW), split session immediately — no discretionary judgment, split as soon as conditions are reached
+- If context dump condition is met (5+ tasks done with more remaining), split session immediately
 - All work must be done inside `.worktrees/{title}` (no direct modification of the main branch)
 - Commits inside the worktree stack on the `{title}` branch → merge to main after Evaluator PASS
 

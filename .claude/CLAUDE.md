@@ -4,7 +4,7 @@ This repository is a Claude Code multi-agent workflow template.
 
 ## Workflow Overview
 
-`/brainstorm` (optional) → `/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
+`/spec` → `/generate` → `/evaluate` (separate session) → `/reflect`
 
 `/gen-eva` — shortcut that chains `/generate` + `/evaluate` in one session (with 1 auto-rework on FAIL)
 

@@ -1,63 +1,51 @@
-# Evaluation Rubric v1.0
+# Evaluation Guideline v1.0
 
 **Applied from**: 2026-03-07
-**Last modified**: 2026-04-14
+**Last modified**: 2026-04-17
 
-> When changing the rubric, increment the version (v1.1, v2.0, etc.) and record the reason for the change.
-> State the rubric version used at the top of every `evaluation/{title}.md` file.
-
----
-
-## Scoring Criteria
-
-| Criteria | Weight | Description |
-|------|--------|------|
-| **Feature completeness** | 30% | Whether the acceptance criteria in `specs/{title}.md` are met. Check all deliverables including alternative paths. |
-| **Code quality** | 25% | Structure, readability, maintainability, test coverage. Includes whether REVIEW log was executed. |
-| **Design/UX** | 25% | (if applicable) Usability, visual polish, responsiveness, completeness of i18n & accessibility. |
-| **Edge cases** | 20% | Exception handling, alternative code path coverage, input validation, error recovery. |
+> This is a **guideline**, not a scoring formula. Use it to calibrate judgment, not to derive a number.
 
 ---
 
-## PASS Criteria
+## What PASS Means
 
-- Weighted average **≥ 7.0**
-- All items **≥ 5.0** (prevents failure on a single item)
-- All VERIFY gates passed (tests / typecheck / lint / build)
+PASS requires all three:
+1. **Deliverables complete** — every item in the spec's "## Deliverables" is present and works as described in the acceptance criteria
+2. **VERIFY gates pass** — all gates in `verify-commands.md` succeed
+3. **No critical issues** — no security holes, data loss paths, or broken core functionality
 
-## Score Reference
+If any of these fail, verdict is FAIL regardless of other quality.
 
-| Score | Meaning |
-|------|------|
-| 9-10 | Exceeds production quality. Higher completion than expected. |
-| 7-8 | Production quality. Ready for real use. |
-| 5-6 | Works but needs improvement. PASS boundary. |
-| 3-4 | Major features incomplete or quality issues. |
-| 1-2 | Implementation attempt level. Mostly incomplete. |
+---
 
-> **Note**: A 7 means "production ready", not "good enough".
-> No score inflation. Judge by evidence only (code + execution results).
+## Quality Dimensions (calibration only — not scored)
+
+These help identify *why* something is FAIL and what to put in "Needs Improvement":
+
+| Dimension | What to look for |
+|-----------|-----------------|
+| **Feature completeness** | Are all acceptance criteria met, including alternative paths? |
+| **Code quality** | Is the code readable, tested where meaningful, and reviewed (REVIEW log)? |
+| **Design/UX** | (if applicable) Does the UI behave as the spec describes? |
+| **Edge cases** | Are error paths, invalid inputs, and boundary conditions handled? |
 
 ---
 
 ## Weight Adjustments by Project Type
 
-The "Design/UX" item applies to **projects with a UI**.
-For projects without UI (CLI tools, libraries, infrastructure code, etc.), use the alternative weights below.
+Use these to calibrate how much weight each dimension gets in your FAIL feedback:
 
-| Project type | Feature completeness | Code quality | Design/API | Edge cases |
-|--------------|------------|----------|----------|------------|
-| **With UI** (default) | 30% | 25% | 25% (UX) | 20% |
-| **CLI / Library** | 35% | 30% | 15% (API design) | 20% |
-| **Infrastructure / Scripts** | 35% | 25% | 10% (operational ergonomics) | 30% |
-
-- State the weight profile used at the top of the evaluation file (e.g., `Weight profile: CLI/Library`)
-- PASS criteria (weighted average ≥ 7.0, all items ≥ 5.0) are the same regardless of profile
+| Project type | Feature | Quality | Design | Edge cases |
+|--------------|---------|---------|--------|------------|
+| **With UI** | high | medium | high | medium |
+| **CLI / Library** | high | high | low (API design) | medium |
+| **Infrastructure** | high | medium | low (ops ergonomics) | high |
 
 ---
 
 ## Change History
 
 | Version | Date | Changes |
-|------|------|-----------|
-| v1.0 | 2026-03-07 | Initial version. 4-dimension scoring (features 30% / quality 25% / UX 25% / edge 20%). |
+|---------|------|---------|
+| v1.0 | 2026-03-07 | Initial version. 4-dimension scoring. |
+| v1.1 | 2026-04-17 | Converted from scoring rubric to calibration guideline. Removed numeric thresholds. |

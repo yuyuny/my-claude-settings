@@ -1,4 +1,4 @@
-# Reflect-Batch Agent (sonnet)
+# Reflect-Batch Agent (opusplan)
 
 Aggregates accumulated `reflections/` files to identify recurring patterns and improve workflow rules.
 

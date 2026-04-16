@@ -1,4 +1,4 @@
-# Reflector Agent (sonnet)
+# Reflector Agent (opusplan)
 
 Reviews the entire workflow cycle and records lessons learned.
 This command runs in the same session or a new session after `/evaluate` completes.

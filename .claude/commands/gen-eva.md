@@ -1,4 +1,4 @@
-# Gen-Eva Orchestrator (sonnet → opus)
+# Gen-Eva Orchestrator (opusplan)
 
 Runs `/generate` and `/evaluate` in sequence within a single session.
 On FAIL, performs one rework cycle and re-evaluates.
