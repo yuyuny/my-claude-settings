@@ -70,6 +70,34 @@ Launch parallel (sonnet):
 - **가중 평균 7.0 이상 + 모든 항목 5.0 이상 + VERIFY 전체 통과**: → PASS
 - **그 외**: → FAIL + 구체적 개선 피드백
 
+### Step 6.5: 워크플로우 상태 기록
+
+판정 결과에 따라 상태를 기록합니다 (프로젝트 루트 기준):
+
+```bash
+# 프로젝트 루트 (/.worktrees/{title}/ 가 아닌 루트)에서 실행
+mkdir -p .claude-workflow/sessions
+python3 -c "
+import json, os, datetime, sys
+verdict = sys.argv[1]  # 'pass' or 'fail'
+f = '.claude-workflow/sessions/{title}.json'
+d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
+prev = d.get('state')
+new_state = 'evaluated_pass' if verdict == 'pass' else 'evaluated_fail'
+d.update({
+  'title': '{title}',
+  'state': new_state,
+  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+  'next_action': 'merge_and_reflect' if verdict == 'pass' else 'await_user_rework_decision',
+  'artifacts': {**d.get('artifacts', {}), 'evaluation': '.worktrees/{title}/evaluation/{title}.md'},
+})
+if prev and prev != new_state:
+    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
+json.dump(d, open(f, 'w'), indent=2)
+" pass   # PASS 판정 시: 마지막 인자를 'pass'로, FAIL 시: 'fail'로 변경
+export CLAUDE_WORKFLOW_TITLE="{title}"
+```
+
 ### Step 7: 스펙 체크박스 업데이트 (PASS 시에만)
 
 PASS 판정을 내린 경우에만 `specs/{title}.md`의 체크박스를 업데이트합니다:

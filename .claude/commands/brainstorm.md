@@ -90,6 +90,29 @@ git commit -m "docs: brainstorm for {title}"
 
 `brainstorms/{title}.md`만 스테이징합니다. 다른 변경 사항은 커밋하지 않습니다.
 
+### Step 6: 워크플로우 상태 기록
+
+```bash
+mkdir -p .claude-workflow/sessions
+python3 -c "
+import json, os, datetime
+f = '.claude-workflow/sessions/{title}.json'
+d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
+prev = d.get('state')
+d.update({
+  'title': '{title}',
+  'state': 'spec_draft',
+  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+  'next_action': 'run_spec',
+  'artifacts': {**d.get('artifacts', {}), 'brainstorm': 'brainstorms/{title}.md'},
+})
+if prev and prev != 'spec_draft':
+    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
+json.dump(d, open(f, 'w'), indent=2)
+"
+export CLAUDE_WORKFLOW_TITLE="{title}"
+```
+
 ## 다음 단계
 
 커밋 완료 후 사용자에게 안내:

@@ -51,6 +51,29 @@ git add reflections/YYYY-MM-DD-HHmm-{title}.md
 git commit -m "docs: add reflection for {title} session"
 ```
 
+### Step 5: 워크플로우 상태 기록
+
+```bash
+mkdir -p .claude-workflow/sessions
+python3 -c "
+import json, os, datetime
+f = '.claude-workflow/sessions/{title}.json'
+d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
+prev = d.get('state')
+d.update({
+  'title': '{title}',
+  'state': 'done',
+  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+  'next_action': None,
+  'artifacts': {**d.get('artifacts', {}), 'reflection': 'reflections/{title}.md'},
+})
+if prev and prev != 'done':
+    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
+json.dump(d, open(f, 'w'), indent=2)
+"
+export CLAUDE_WORKFLOW_TITLE="{title}"
+```
+
 ## 출력 형식
 
 `reflections/YYYY-MM-DD-HHmm-{title}.md`에 저장:

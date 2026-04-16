@@ -56,6 +56,29 @@ git commit -m "docs: add spec for {title}"
 
 **주의**: `specs/{title}.md`만 스테이징합니다. 다른 변경 사항은 커밋하지 않습니다.
 
+### Step 7: 워크플로우 상태 기록
+
+```bash
+mkdir -p .claude-workflow/sessions
+python3 -c "
+import json, os, datetime
+f = '.claude-workflow/sessions/{title}.json'
+d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
+prev = d.get('state')
+d.update({
+  'title': '{title}',
+  'state': 'spec_ready',
+  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
+  'next_action': 'await_user_approval_then_generate',
+  'artifacts': {**d.get('artifacts', {}), 'spec': 'specs/{title}.md'},
+})
+if prev and prev != 'spec_ready':
+    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
+json.dump(d, open(f, 'w'), indent=2)
+"
+export CLAUDE_WORKFLOW_TITLE="{title}"
+```
+
 ## 출력 형식
 
 ```markdown

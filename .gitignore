@@ -9,6 +9,9 @@ Thumbs.db
 # Claude
 .claude/settings.local.json
 
+# Workflow state (local execution state, not project artifacts)
+.claude-workflow/
+
 # Environment
 .env
 .env.local
