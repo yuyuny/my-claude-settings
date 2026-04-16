@@ -24,14 +24,13 @@ kebab-case 제목을 먼저 결정합니다.
 
 기존 코드베이스가 있는 경우 병렬 탐색 에이전트로 영향 범위를 파악합니다.
 
-**출력 계약**: 서브에이전트 출력 계약(`.claude/rules/multi-agent-workflow.md`) 준수.
-각 에이전트는 `파일경로 — 1줄 근거` 형식 bullet 리스트로만 반환. raw 코드 덤프 금지.
+서브에이전트 출력 계약: `.claude/rules/multi-agent-workflow.md` 준수.
 
 ```
 Launch parallel (sonnet):
-  1. 관련 파일/모듈 구조 탐색 → bullet: `경로/파일.ts — 이유`
-  2. 기존 패턴/컨벤션 확인   → bullet: `경로/파일.ts — 어떤 패턴`
-  3. 의존성/영향 범위 분석   → bullet: `경로/파일.ts — 영향 방향`
+  1. 관련 파일/모듈 구조 탐색 → `경로/파일.ts — 이유`
+  2. 기존 패턴/컨벤션 확인   → `경로/파일.ts — 어떤 패턴`
+  3. 의존성/영향 범위 분석   → `경로/파일.ts — 영향 방향`
 ```
 
 SCOPE 결과는 Step 3 질의에서 코드 근거로 인용합니다.
@@ -93,24 +92,7 @@ git commit -m "docs: brainstorm for {title}"
 ### Step 6: 워크플로우 상태 기록
 
 ```bash
-mkdir -p .claude-workflow/sessions
-python3 -c "
-import json, os, datetime
-f = '.claude-workflow/sessions/{title}.json'
-d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
-prev = d.get('state')
-d.update({
-  'title': '{title}',
-  'state': 'spec_draft',
-  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
-  'next_action': 'run_spec',
-  'artifacts': {**d.get('artifacts', {}), 'brainstorm': 'brainstorms/{title}.md'},
-})
-if prev and prev != 'spec_draft':
-    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
-json.dump(d, open(f, 'w'), indent=2)
-"
-export CLAUDE_WORKFLOW_TITLE="{title}"
+.claude/scripts/workflow-advance.sh record {title} spec_draft brainstorm brainstorms/{title}.md
 ```
 
 ## 다음 단계

@@ -1,19 +1,50 @@
 #!/usr/bin/env bash
-# workflow-advance.sh — Stop hook for multi-agent workflow semi-automation
+# workflow-advance.sh — Stop hook + state recorder for multi-agent workflow
 #
-# Called by Claude Code's Stop hook after each session ends.
-# Reads the current session's state and:
-#   1. Prints the next action guidance to stdout (injected into Claude's context)
-#   2. Copies the next command to clipboard (pbcopy)
-#   3. Shows a desktop notification (macOS osascript)
+# Usage:
+#   ./workflow-advance.sh                      # Stop hook mode (reads state, prints guidance)
+#   ./workflow-advance.sh record <title> <state> [artifact_key] [artifact_val]
+#                                              # Record state transition
 #
-# Session identification priority:
-#   1. CLAUDE_WORKFLOW_TITLE env var (set explicitly per command)
-#   2. Most recently modified file in .claude-workflow/sessions/
+# Stop hook reads CLAUDE_WORKFLOW_TITLE env var (or falls back to most recent file).
 
 set -euo pipefail
 
 WORKFLOW_DIR=".claude-workflow/sessions"
+
+# ── record subcommand ────────────────────────────────────────────────────────
+if [[ "${1:-}" == "record" ]]; then
+  TITLE="$2"
+  NEW_STATE="$3"
+  ART_KEY="${4:-}"
+  ART_VAL="${5:-}"
+
+  # Resolve sessions dir relative to project root (handles worktree ../../ calls)
+  ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo ".")"
+  DIR="$ROOT/$WORKFLOW_DIR"
+  mkdir -p "$DIR"
+  FILE="$DIR/${TITLE}.json"
+
+  python3 - "$TITLE" "$NEW_STATE" "$ART_KEY" "$ART_VAL" "$FILE" <<'PYEOF'
+import json, os, datetime, sys
+title, new_state, art_key, art_val, fpath = sys.argv[1:]
+d = json.load(open(fpath)) if os.path.exists(fpath) else {"title": title, "history": [], "artifacts": {}}
+prev = d.get("state")
+if art_key:
+    d.setdefault("artifacts", {})[art_key] = art_val
+d.update({
+    "title": title, "state": new_state,
+    "updated_at": datetime.datetime.utcnow().isoformat() + "Z",
+})
+if prev and prev != new_state:
+    d["history"] = d.get("history", []) + [{"state": prev, "at": d["updated_at"]}]
+json.dump(d, open(fpath, "w"), indent=2)
+PYEOF
+
+  export CLAUDE_WORKFLOW_TITLE="$TITLE"
+  exit 0
+fi
+# ────────────────────────────────────────────────────────────────────────────
 NEXT_CMD=""
 NOTIFY_MSG=""
 

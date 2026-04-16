@@ -29,14 +29,13 @@ git worktree add .worktrees/{title} -b {title}
 - **brainstorms/{title}.md 있음**: "영향 받는 경로" 섹션을 스펙으로 **그대로 복사**. 탐색 에이전트 재실행 금지.
 - **없음**: 병렬 탐색 에이전트(sonnet × 2~3)로 영향 범위 파악.
 
-  **출력 계약**: 서브에이전트 출력 계약(`.claude/rules/multi-agent-workflow.md`) 준수.
-  각 에이전트는 `파일경로 — 1줄 근거` 형식 bullet 리스트로만 반환. raw 코드 덤프 금지.
+  서브에이전트 출력 계약: `.claude/rules/multi-agent-workflow.md` 준수.
 
   ```
   Launch parallel (sonnet):
-    1. 관련 파일/모듈 구조 탐색 → bullet: `경로/파일 — 이유`
-    2. 기존 패턴/컨벤션 확인   → bullet: `경로/파일 — 어떤 패턴`
-    3. 의존성/영향 범위 분석   → bullet: `경로/파일 — 영향 방향`
+    1. 관련 파일/모듈 구조 탐색 → `경로/파일 — 이유`
+    2. 기존 패턴/컨벤션 확인   → `경로/파일 — 어떤 패턴`
+    3. 의존성/영향 범위 분석   → `경로/파일 — 영향 방향`
   ```
 
 ### Step 3: 세션 제목 확정
@@ -71,27 +70,10 @@ git commit -m "docs: add spec for {title}"
 
 ### Step 7: 워크플로우 상태 기록
 
-워크트리 안에서 프로젝트 루트의 상태 파일을 업데이트합니다:
+워크트리 안에서 실행 (스크립트가 git root를 자동 탐지):
 
 ```bash
-mkdir -p ../../.claude-workflow/sessions
-python3 -c "
-import json, os, datetime
-f = '../../.claude-workflow/sessions/{title}.json'
-d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
-prev = d.get('state')
-d.update({
-  'title': '{title}',
-  'state': 'spec_ready',
-  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
-  'next_action': 'await_user_approval_then_generate',
-  'artifacts': {**d.get('artifacts', {}), 'spec': 'specs/{title}.md'},
-})
-if prev and prev != 'spec_ready':
-    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
-json.dump(d, open(f, 'w'), indent=2)
-"
-export CLAUDE_WORKFLOW_TITLE="{title}"
+../../.claude/scripts/workflow-advance.sh record {title} spec_ready spec specs/{title}.md
 ```
 
 ## 출력 형식

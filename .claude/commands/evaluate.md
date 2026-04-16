@@ -45,13 +45,11 @@ Generator의 VERIFY 결과를 신뢰하지 말 것 — 직접 확인.
   - `git log --oneline | grep "review:"` 로 리뷰 수정 커밋 존재 여부 확인 (이슈 없음 회차는 review 커밋이 없을 수 있음 — 핸드오프 로그 우선)
   - 1회 초과 회차의 적절성도 확인 (2-3 태스크당 1회 권장)
 
-병렬 탐색으로 효율화 가능. **출력 계약**: 서브에이전트 출력 계약(`.claude/rules/multi-agent-workflow.md`) 준수.
+서브에이전트 출력 계약: `.claude/rules/multi-agent-workflow.md` 준수.
 ```
 Launch parallel (sonnet):
-  Agent 1: 테스트 스위트 실행 + 결과 수집
-           → 반환: 요약 3줄 + 실패 건수. 테스트 로그 전체 dump 금지.
-  Agent 2: 코드 구조/품질 정적 분석 — 핸드오프 명시 파일만 대상
-           → 반환: 이슈 당 1줄 bullet. `파일경로:라인 — 이슈 설명` 형식.
+  Agent 1: 테스트 스위트 실행 → 요약 3줄 + 실패 건수 (로그 dump 금지)
+  Agent 2: 코드 품질 정적 분석 (핸드오프 명시 파일만) → `파일:라인 — 이슈`
 ```
 
 ### Step 4: 동작 검증
@@ -61,7 +59,7 @@ Launch parallel (sonnet):
 
 ### Step 5: 채점
 
-> 채점 기준: `evaluation/rubric-v1.md` 참조 (파일이 없으면 아래 기본 루브릭 사용).
+> 채점 기준: `../../evaluation/rubric-v1.md` 참조 (프로젝트 루트 기준, 파일이 없으면 아래 기본 루브릭 사용).
 > 루브릭 변경 시 버전 업 후 evaluation 파일 상단에 버전 명시.
 
 각 항목 1-10점 (현재 루브릭: **v1.0**):
@@ -80,32 +78,13 @@ Launch parallel (sonnet):
 
 ### Step 6.5: 워크플로우 상태 기록
 
-판정 결과에 따라 상태를 기록합니다. **프로젝트 루트**에서 실행하세요 (워크트리 안이라면 `cd` 먼저):
+판정 결과에 맞게 state를 선택해 실행합니다 (스크립트가 git root를 자동 탐지):
 
 ```bash
-# 프로젝트 루트에서 실행 (워크트리 안이면: cd ../../  또는 git rev-parse --show-toplevel 참고)
-mkdir -p .claude-workflow/sessions
-# PASS 판정 시: VERDICT=pass, FAIL 판정 시: VERDICT=fail
-VERDICT=pass   # ← 판정에 맞게 변경
-python3 -c "
-import json, os, datetime
-import os; verdict = os.environ.get('VERDICT', 'fail')
-f = '.claude-workflow/sessions/{title}.json'
-d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
-prev = d.get('state')
-new_state = 'evaluated_pass' if verdict == 'pass' else 'evaluated_fail'
-d.update({
-  'title': '{title}',
-  'state': new_state,
-  'updated_at': datetime.datetime.utcnow().isoformat() + 'Z',
-  'next_action': 'merge_and_reflect' if verdict == 'pass' else 'await_user_rework_decision',
-  'artifacts': {**d.get('artifacts', {}), 'evaluation': '.worktrees/{title}/evaluation/{title}.md'},
-})
-if prev and prev != new_state:
-    d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
-json.dump(d, open(f, 'w'), indent=2)
-"
-export CLAUDE_WORKFLOW_TITLE="{title}"
+# PASS 시:
+../../.claude/scripts/workflow-advance.sh record {title} evaluated_pass evaluation .worktrees/{title}/evaluation/{title}.md
+# FAIL 시:
+../../.claude/scripts/workflow-advance.sh record {title} evaluated_fail evaluation .worktrees/{title}/evaluation/{title}.md
 ```
 
 ### Step 7: 스펙 체크박스 업데이트 (PASS 시에만)
@@ -130,7 +109,7 @@ FAIL 판정 시에는 specs 파일을 수정하지 않습니다.
 ```markdown
 # Evaluation: {세션 제목}
 
-> 루브릭: v1.0 (`evaluation/rubric-v1.md`)
+> 루브릭: v1.0 (`../../evaluation/rubric-v1.md`)
 
 ## 딜리버블 대조
 <!-- Step 1 서브에이전트가 직접 작성. 메인 세션은 "누락 건수 N / 불일치 건수 M"만 보고받음. -->
