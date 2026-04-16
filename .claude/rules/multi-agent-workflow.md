@@ -25,7 +25,7 @@
 ## 핵심 규칙
 
 - 세션 식별자는 kebab-case: `auth-login`, `player-movement`
-- Generator는 `.worktrees/{title}`에서 작업 (메인 브랜치 직접 수정 금지)
+- `/spec`부터 `.worktrees/{title}`에서 작업 (메인 브랜치 직접 수정 금지). `/brainstorm`은 메인에서 실행.
 - Evaluator는 반드시 Generator와 다른 세션에서 실행
 - 검증 게이트 강제 — 게이트 정의는 `.claude/rules/verify-commands.md` 참조. 코드 영역 기본값: TDD (RED → GREEN → REFACTOR). 테스트가 불가능한 영역(UI 레이아웃, 에셋, 밸런싱 수치 등)은 대체 검증 수단을 스펙의 검증 기준에 명시하고, 핸드오프에 사유를 기록할 것.
 - `/simplify`로 diff 기반 코드 리뷰 — **세션당 최소 1회 필수** + 매 2-3 태스크당 1회 (결과는 핸드오프 REVIEW 로그에 기록). 태스크 수가 적어도 면제되지 않음.
@@ -81,8 +81,12 @@ idle → brainstorming → spec_draft → spec_ready → generating
 
 - `.worktrees/` — git worktree 작업 공간 (.gitignore 추가)
 - `.claude-workflow/` — 워크플로우 실행 상태 (gitignore, 로컬 전용)
-- `brainstorms/` — Brainstormer 산출물 (Spec Writer 입력. `/brainstorm` 생략 시 없음)
-- `specs/` — Spec Writer 스펙 (Generator 수정 금지. Evaluator PASS 판정 후 체크박스만 업데이트)
+- `brainstorms/` — Brainstormer 산출물. **메인 브랜치**에 커밋. (`/brainstorm` 생략 시 없음)
+
+아래 디렉토리는 **워크트리 브랜치** (`.worktrees/{title}/`) 안에 생성됩니다:
+- `specs/` — `/spec`이 작성. Generator 수정 금지. Evaluator PASS 판정 후 체크박스만 업데이트.
 - `handoffs/` — Generator → Evaluator 컨텍스트
 - `evaluation/` — Evaluator 보고서
 - `reflections/` — 세션 회고 기록
+
+머지(`git merge {title}`) 시 위 산출물이 모두 메인 브랜치에 반영됩니다.

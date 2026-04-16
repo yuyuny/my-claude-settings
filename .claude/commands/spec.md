@@ -13,6 +13,17 @@
 - `brainstorms/{title}.md` 가 있으면 → 1차 입력으로 사용 (SCOPE 재실행 금지)
 - 없으면 → 메인 세션 컨텍스트를 1차 입력으로 사용. 짧은 확인 1~2개만 던지고 바로 작성
 
+### Step 1.5: 워크트리 생성
+
+`/spec`부터 모든 산출물(스펙, 핸드오프, 평가, 회고)은 워크트리 브랜치에서 관리합니다.
+
+```bash
+git worktree add .worktrees/{title} -b {title}
+```
+
+이미 워크트리가 있으면(재작업 등) 생략하고 `cd .worktrees/{title}`로 이동만 합니다.
+**이후 모든 Step은 `.worktrees/{title}` 안에서 실행합니다.**
+
 ### Step 2: SCOPE
 
 - **brainstorms/{title}.md 있음**: "영향 받는 경로" 섹션을 스펙으로 **그대로 복사**. 탐색 에이전트 재실행 금지.
@@ -49,6 +60,8 @@ Spec Writer가 구현 방법을 지정하면 오류가 전파(cascade)될 위험
 
 ### Step 6: 스펙 커밋
 
+`.worktrees/{title}` 안에서 실행합니다:
+
 ```bash
 git add specs/{title}.md
 git commit -m "docs: add spec for {title}"
@@ -58,11 +71,13 @@ git commit -m "docs: add spec for {title}"
 
 ### Step 7: 워크플로우 상태 기록
 
+워크트리 안에서 프로젝트 루트의 상태 파일을 업데이트합니다:
+
 ```bash
-mkdir -p .claude-workflow/sessions
+mkdir -p ../../.claude-workflow/sessions
 python3 -c "
 import json, os, datetime
-f = '.claude-workflow/sessions/{title}.json'
+f = '../../.claude-workflow/sessions/{title}.json'
 d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
 prev = d.get('state')
 d.update({

@@ -11,19 +11,18 @@
 
 ### Step 0: 워크스페이스 준비
 
-스펙 파일이 커밋되어 있는지 확인 후 격리된 워크트리를 생성합니다.
+`/spec`이 워크트리를 이미 생성했으므로 이동 후 스펙 파일 존재를 확인합니다.
 아래 블록의 의존성 설치 명령은 **프로젝트 스택의 기본값으로 교체**한다. 기본은 Node/pnpm이며, 다른 스택 예시는 블록 하단 주석 참고.
 
 ```bash
-git ls-files --error-unmatch specs/{title}.md 2>/dev/null || { echo "ERROR: specs/{title}.md가 커밋되지 않았습니다. /spec을 먼저 실행하세요."; exit 1; }
-git worktree add .worktrees/{title} -b {title}
 cd .worktrees/{title}
+test -f specs/{title}.md || { echo "ERROR: specs/{title}.md 가 없습니다. /spec을 먼저 실행하세요."; exit 1; }
 pnpm install --frozen-lockfile   # 워크트리는 메인의 node_modules를 공유하지 않음
 # 다른 스택 예: poetry install / go mod download / cargo fetch / (Unity·Unreal 등) 해당 없음
 ```
 
-재작업인 경우 기존 워크트리로 이동: `cd .worktrees/{title}`
-워크트리에 의존성 캐시(`node_modules`/`.venv`/`target` 등)가 없으면 위 블록의 설치 명령을 먼저 실행.
+재작업인 경우: 워크트리가 이미 존재하므로 `cd .worktrees/{title}` 후 바로 진행.
+의존성 캐시(`node_modules`/`.venv`/`target` 등)가 없으면 위 설치 명령을 먼저 실행.
 
 ### Step 1: SCOPE — 병렬 탐색 (sonnet × 2~3)
 구현 전 영향 범위를 병렬 탐색 에이전트로 파악합니다.

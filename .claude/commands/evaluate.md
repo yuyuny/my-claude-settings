@@ -80,14 +80,16 @@ Launch parallel (sonnet):
 
 ### Step 6.5: 워크플로우 상태 기록
 
-판정 결과에 따라 상태를 기록합니다 (프로젝트 루트 기준):
+판정 결과에 따라 상태를 기록합니다. **프로젝트 루트**에서 실행하세요 (워크트리 안이라면 `cd` 먼저):
 
 ```bash
-# 프로젝트 루트 (/.worktrees/{title}/ 가 아닌 루트)에서 실행
+# 프로젝트 루트에서 실행 (워크트리 안이면: cd ../../  또는 git rev-parse --show-toplevel 참고)
 mkdir -p .claude-workflow/sessions
+# PASS 판정 시: VERDICT=pass, FAIL 판정 시: VERDICT=fail
+VERDICT=pass   # ← 판정에 맞게 변경
 python3 -c "
-import json, os, datetime, sys
-verdict = sys.argv[1]  # 'pass' or 'fail'
+import json, os, datetime
+import os; verdict = os.environ.get('VERDICT', 'fail')
 f = '.claude-workflow/sessions/{title}.json'
 d = json.load(open(f)) if os.path.exists(f) else {'title': '{title}', 'history': []}
 prev = d.get('state')
@@ -102,19 +104,19 @@ d.update({
 if prev and prev != new_state:
     d['history'] = d.get('history', []) + [{'state': prev, 'at': d['updated_at']}]
 json.dump(d, open(f, 'w'), indent=2)
-" pass   # PASS 판정 시: 마지막 인자를 'pass'로, FAIL 시: 'fail'로 변경
+"
 export CLAUDE_WORKFLOW_TITLE="{title}"
 ```
 
 ### Step 7: 스펙 체크박스 업데이트 (PASS 시에만)
 
-PASS 판정을 내린 경우에만 `specs/{title}.md`의 체크박스를 업데이트합니다:
+PASS 판정을 내린 경우에만 `specs/{title}.md`의 체크박스를 업데이트합니다.
+`specs/{title}.md`는 워크트리 브랜치에 있으므로 `.worktrees/{title}` 안에서 그대로 커밋합니다:
 
 1. **딜리버블 체크박스**: 각 `- [ ]`를 `- [x]`로 변경
 2. **VERIFY 체크박스**: 각 `- [ ]`를 `- [x]`로 변경
-3. 워크트리에서 커밋:
+3. `.worktrees/{title}` 안에서 커밋 (이미 여기에 있으면 `cd` 불필요):
 ```bash
-cd .worktrees/{title}
 git add specs/{title}.md
 git commit -m "docs: mark spec deliverables as verified"
 ```
