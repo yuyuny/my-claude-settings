@@ -4,8 +4,23 @@
 import json
 import os
 import glob
+import subprocess
 
-SESSIONS_DIR = ".claude-workflow/sessions"
+
+def get_main_root():
+    """Resolve main repo root (works from worktrees too)."""
+    try:
+        git_common_dir = subprocess.check_output(
+            ["git", "rev-parse", "--git-common-dir"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        return os.path.dirname(os.path.abspath(git_common_dir))
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "."
+
+
+SESSIONS_DIR = os.path.join(get_main_root(), ".claude-workflow", "sessions")
 
 STATE_LABELS = {
     "brainstorming":  "🧠 브레인스토밍 진행 중",

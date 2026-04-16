@@ -15,7 +15,7 @@ python3 .claude/scripts/workflow-status.py
 
 ```bash
 # 활성 워크트리 목록
-git worktree list 2>/dev/null | grep -v "$(git rev-parse --show-toplevel)" || true
+git worktree list 2>/dev/null | grep -v "$(cd "$(git rev-parse --git-common-dir)/.." && pwd)" || true
 ```
 
 ### Step 3: 다음 액션 안내

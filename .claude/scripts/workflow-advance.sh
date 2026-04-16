@@ -11,12 +11,19 @@
 
 set -euo pipefail
 
-WORKFLOW_DIR=".claude-workflow/sessions"
+# Resolve main repo root (works from worktrees too)
+get_main_root() {
+  local git_common_dir
+  git_common_dir="$(git rev-parse --git-common-dir 2>/dev/null)" || { echo "."; return; }
+  (cd "$git_common_dir/.." && pwd)
+}
+
+WORKFLOW_REL=".claude-workflow/sessions"
 
 # ── merge subcommand ─────────────────────────────────────────────────────────
 if [[ "${1:-}" == "merge" ]]; then
   TITLE="$2"
-  ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo ".")"
+  ROOT="$(get_main_root)"
   cd "$ROOT"
   CURRENT=$(git rev-parse --abbrev-ref HEAD)
   if [[ "$CURRENT" != "main" && "$CURRENT" != "master" ]]; then
@@ -30,7 +37,7 @@ fi
 # ── cleanup subcommand ───────────────────────────────────────────────────────
 if [[ "${1:-}" == "cleanup" ]]; then
   TITLE="$2"
-  ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo ".")"
+  ROOT="$(get_main_root)"
   cd "$ROOT"
   WORKTREE_PATH=".worktrees/$TITLE"
   if git worktree list | grep -q "$WORKTREE_PATH"; then
@@ -50,9 +57,9 @@ if [[ "${1:-}" == "record" ]]; then
   ART_KEY="${4:-}"
   ART_VAL="${5:-}"
 
-  # Resolve sessions dir relative to project root (handles worktree ../../ calls)
-  ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo ".")"
-  DIR="$ROOT/$WORKFLOW_DIR"
+  # Resolve sessions dir relative to main repo root (handles worktree ../../ calls)
+  ROOT="$(get_main_root)"
+  DIR="$ROOT/$WORKFLOW_REL"
   mkdir -p "$DIR"
   FILE="$DIR/${TITLE}.json"
 
@@ -78,6 +85,10 @@ fi
 # ────────────────────────────────────────────────────────────────────────────
 NEXT_CMD=""
 NOTIFY_MSG=""
+
+# Resolve absolute sessions dir for stop hook mode (may run from worktree via $CLAUDE_PROJECT_DIR)
+_MAIN_ROOT="$(get_main_root)"
+WORKFLOW_DIR="$_MAIN_ROOT/$WORKFLOW_REL"
 
 # --- Find current session ---
 if [[ -n "${CLAUDE_WORKFLOW_TITLE:-}" ]]; then
