@@ -6,6 +6,12 @@
 요구사항이 모호하다면 `/brainstorm` (opus) 을 먼저 실행하세요.
 요구사항이 이미 메인 세션에서 명확히 정의된 경우 `/brainstorm` 없이 바로 실행해도 됩니다.
 
+## 토큰 가드
+
+- `/brainstorm` 없이 실행 시: 확인 질문 최대 **2개**. 답변 받은 즉시 스펙 작성 시작 — 추가 질의 금지.
+- 스펙 작성 후 **즉시 커밋** — 추가 분석·확장 금지.
+- 산출물 목표: **≤ 60줄**. 초과 시 딜리버블 범위를 줄이거나 섹션을 압축.
+
 ## 프로세스
 
 ### Step 1: 입력 결정
@@ -17,11 +23,21 @@
 
 `/spec`부터 모든 산출물(스펙, 핸드오프, 평가, 회고)은 워크트리 브랜치에서 관리합니다.
 
+**처음 실행 시:**
 ```bash
 git worktree add .worktrees/{title} -b {title}
 ```
 
-이미 워크트리가 있으면(재작업 등) 생략하고 `cd .worktrees/{title}`로 이동만 합니다.
+**재작업 시나리오별 처리:**
+
+- **`evaluated_fail` 후 스펙 재정의**: 워크트리가 이미 존재하므로 `cd .worktrees/{title}`로 이동만 합니다. 기존 코드 위에 스펙만 갱신합니다. Generator가 이전 구현을 참고해 재작업할 수 있습니다.
+- **처음부터 다시 시작(브랜치 리셋)**: 명시적으로 요청된 경우에만 실행합니다.
+  ```bash
+  git worktree remove .worktrees/{title}
+  git branch -D {title}
+  git worktree add .worktrees/{title} -b {title}
+  ```
+
 **이후 모든 Step은 `.worktrees/{title}` 안에서 실행합니다.**
 
 ### Step 2: SCOPE

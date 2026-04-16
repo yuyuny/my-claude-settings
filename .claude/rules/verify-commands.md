@@ -25,46 +25,8 @@ pnpm build      # 빌드 (해당 시)
 
 ## 스택별 참고 예시
 
-프로젝트에 맞는 게이트로 위 기본값을 교체하면 됩니다.
-
-### Python
-```bash
-pytest              # 테스트
-mypy src/           # 타입 체크
-ruff check .        # 린트
-python -m build     # 패키지 빌드 (해당 시)
-```
-
-### Go
-```bash
-go test ./...       # 테스트
-go vet ./...        # 정적 분석
-golangci-lint run   # 린트 (설치 시)
-go build ./...      # 빌드
-```
-
-### Unity (C#)
-```bash
-# Unity 배치 모드 테스트 (프로젝트 경로 조정 필요)
-/Applications/Unity/Hub/Editor/{version}/Unity.app/Contents/MacOS/Unity \
-  -batchmode -runTests -testPlatform EditMode \
-  -projectPath . -testResults test-results.xml -logFile -
-```
-
-### Unreal Engine
-```bash
-# UAT 테스트 (엔진 경로 조정 필요)
-{UE_ROOT}/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
-  -project="{project}.uproject" -noP4 -platform=Win64 \
-  -clientconfig=Development -build -cook -stage
-```
-
-### Rust
-```bash
-cargo test          # 테스트
-cargo clippy        # 린트
-cargo build         # 빌드
-```
+> 다른 스택 예시는 `docs/verify-commands-examples.md` 참조.
+> 프로젝트 세팅 시에만 열어보고, 이 파일에는 현재 프로젝트 게이트만 유지합니다.
 
 ## 규칙
 

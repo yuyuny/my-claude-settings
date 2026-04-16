@@ -57,7 +57,7 @@ git commit -m "docs: add reflection for {title} session"
 ### Step 5: 워크플로우 상태 기록
 
 ```bash
-../../.claude/scripts/workflow-advance.sh record {title} done reflection reflections/{title}.md
+../../.claude/scripts/workflow-advance.sh record {title} done reflection reflections/$(date +%Y-%m-%d-%H%M)-{title}.md
 ```
 
 ## 출력 형식

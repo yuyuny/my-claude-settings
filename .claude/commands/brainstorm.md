@@ -20,6 +20,12 @@ kebab-case 제목을 먼저 결정합니다.
 - 좋은 예: `auth-login`, `dashboard-charts`, `payment-stripe`
 - 나쁜 예: `sprint-1`, `feature-a`, `misc-fixes`
 
+제목 결정 직후 `brainstorming` 상태를 기록합니다:
+
+```bash
+.claude/scripts/workflow-advance.sh record {title} brainstorming
+```
+
 ### Step 2: 병렬 SCOPE (sonnet × 2~3)
 
 기존 코드베이스가 있는 경우 병렬 탐색 에이전트로 영향 범위를 파악합니다.
@@ -66,11 +72,11 @@ SCOPE 결과는 Step 3 질의에서 코드 근거로 인용합니다.
 
 ## 영향 받는 경로 (SCOPE 결과)
 - 주 경로:
-  - `path/to/file.ts` — 이유
+  - `path/to/file` — 이유
 - 대체 경로:
-  - `path/to/file.ts` — 이유
+  - `path/to/file` — 이유
 - 연동 시스템:
-  - `path/to/file.ts` — 이유
+  - `path/to/file` — 이유
 
 ## 열린 질문 (구현 중 결정)
 - {질문}

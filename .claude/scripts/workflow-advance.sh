@@ -2,15 +2,46 @@
 # workflow-advance.sh — Stop hook + state recorder for multi-agent workflow
 #
 # Usage:
-#   ./workflow-advance.sh                      # Stop hook mode (reads state, prints guidance)
-#   ./workflow-advance.sh record <title> <state> [artifact_key] [artifact_val]
-#                                              # Record state transition
+#   ./workflow-advance.sh                                    # Stop hook mode
+#   ./workflow-advance.sh record <title> <state> [key] [val] # Record state transition
+#   ./workflow-advance.sh merge <title>                      # Merge worktree into main
+#   ./workflow-advance.sh cleanup <title>                    # Remove worktree + branch
 #
-# Stop hook reads CLAUDE_WORKFLOW_TITLE env var (or falls back to most recent file).
+# Stop hook reads CLAUDE_WORKFLOW_TITLE env var (or falls back to most recent non-done file).
 
 set -euo pipefail
 
 WORKFLOW_DIR=".claude-workflow/sessions"
+
+# ── merge subcommand ─────────────────────────────────────────────────────────
+if [[ "${1:-}" == "merge" ]]; then
+  TITLE="$2"
+  ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo ".")"
+  cd "$ROOT"
+  CURRENT=$(git rev-parse --abbrev-ref HEAD)
+  if [[ "$CURRENT" != "main" && "$CURRENT" != "master" ]]; then
+    git checkout main 2>/dev/null || git checkout master
+  fi
+  git merge "$TITLE"
+  echo "[workflow] merged $TITLE into $(git rev-parse --abbrev-ref HEAD)"
+  exit 0
+fi
+
+# ── cleanup subcommand ───────────────────────────────────────────────────────
+if [[ "${1:-}" == "cleanup" ]]; then
+  TITLE="$2"
+  ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo ".")"
+  cd "$ROOT"
+  WORKTREE_PATH=".worktrees/$TITLE"
+  if git worktree list | grep -q "$WORKTREE_PATH"; then
+    git worktree remove "$WORKTREE_PATH" 2>/dev/null || git worktree remove --force "$WORKTREE_PATH"
+  fi
+  if git branch --list "$TITLE" | grep -q "$TITLE"; then
+    git branch -d "$TITLE" 2>/dev/null || echo "[workflow] branch $TITLE has unmerged commits, skipping deletion"
+  fi
+  echo "[workflow] cleanup done for $TITLE"
+  exit 0
+fi
 
 # ── record subcommand ────────────────────────────────────────────────────────
 if [[ "${1:-}" == "record" ]]; then
@@ -53,10 +84,17 @@ if [[ -n "${CLAUDE_WORKFLOW_TITLE:-}" ]]; then
   TITLE="$CLAUDE_WORKFLOW_TITLE"
   SESSION_FILE="$WORKFLOW_DIR/${TITLE}.json"
 else
-  # Fallback: most recently modified session file
-  SESSION_FILE=$(ls -t "$WORKFLOW_DIR"/*.json 2>/dev/null | head -1 || true)
+  # Fallback: most recently modified session file that is NOT in 'done' state
+  SESSION_FILE=""
+  for f in $(ls -t "$WORKFLOW_DIR"/*.json 2>/dev/null || true); do
+    file_state=$(python3 -c "import json,sys; d=json.load(open('$f')); print(d.get('state',''))" 2>/dev/null || true)
+    if [[ "$file_state" != "done" ]]; then
+      SESSION_FILE="$f"
+      break
+    fi
+  done
   if [[ -z "$SESSION_FILE" ]]; then
-    exit 0  # No active workflow session, nothing to do
+    exit 0  # No active (non-done) workflow session, nothing to do
   fi
   TITLE=$(basename "$SESSION_FILE" .json)
 fi
@@ -130,17 +168,25 @@ EOF
     ;;
 
   evaluated_pass)
-    NOTIFY_MSG="$TITLE: ✅ PASS — 머지 명령을 확인하세요"
+    NOTIFY_MSG="$TITLE: ✅ PASS — /reflect 먼저, 그 다음 머지"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: evaluated_pass
-✅ 승인 게이트: Evaluator PASS. 머지 전 evaluation/$TITLE.md 확인하세요.
+✅ 승인 게이트: Evaluator PASS.
 
-  머지 명령 (확인 후 직접 실행):
-  git checkout main && git merge $TITLE && git worktree remove .worktrees/$TITLE && git branch -d $TITLE
+순서를 반드시 지키세요 (worktree 삭제 전 /reflect 필요):
 
-이후: claude "/reflect $TITLE"   ← 클립보드에 복사됨
+  ① claude "/reflect $TITLE"   ← 클립보드에 복사됨
+     (worktree 안 산출물 참조 — 머지 전에 실행)
+
+  ② 머지 + 정리 (reflect 완료 후):
+     .claude/scripts/workflow-advance.sh merge $TITLE
+     .claude/scripts/workflow-advance.sh cleanup $TITLE
+
+  또는 수동:
+     git checkout main && git merge $TITLE
+     git worktree remove .worktrees/$TITLE && git branch -d $TITLE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -168,13 +214,17 @@ EOF
     ;;
 
   done)
-    NOTIFY_MSG="$TITLE: 🎉 사이클 완료"
+    NOTIFY_MSG="$TITLE: 🎉 사이클 완료 — worktree 정리하세요"
     cat <<EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [workflow] $TITLE — state: done
 🎉 전체 사이클 완료 (brainstorm → reflect).
 reflections/ 에 회고가 기록되었습니다.
+
+워크트리가 아직 남아있다면 정리하세요:
+  .claude/scripts/workflow-advance.sh merge $TITLE    # (미머지 시)
+  .claude/scripts/workflow-advance.sh cleanup $TITLE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -186,11 +236,21 @@ EOF
 esac
 
 # --- Clipboard copy (next command) ---
-if [[ -n "$NEXT_CMD" ]] && command -v pbcopy &>/dev/null; then
-  echo -n "$NEXT_CMD" | pbcopy
+if [[ -n "$NEXT_CMD" ]]; then
+  if command -v pbcopy &>/dev/null; then
+    echo -n "$NEXT_CMD" | pbcopy          # macOS
+  elif command -v xclip &>/dev/null; then
+    echo -n "$NEXT_CMD" | xclip -selection clipboard  # Linux (xclip)
+  elif command -v xsel &>/dev/null; then
+    echo -n "$NEXT_CMD" | xsel --clipboard --input     # Linux (xsel)
+  fi
 fi
 
 # --- Desktop notification ---
-if [[ -n "$NOTIFY_MSG" ]] && command -v osascript &>/dev/null; then
-  osascript -e "display notification \"$NOTIFY_MSG\" with title \"Claude Workflow\"" 2>/dev/null || true
+if [[ -n "$NOTIFY_MSG" ]]; then
+  if command -v osascript &>/dev/null; then
+    osascript -e "display notification \"$NOTIFY_MSG\" with title \"Claude Workflow\"" 2>/dev/null || true  # macOS
+  elif command -v notify-send &>/dev/null; then
+    notify-send "Claude Workflow" "$NOTIFY_MSG" 2>/dev/null || true  # Linux
+  fi
 fi

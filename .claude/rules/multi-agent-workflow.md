@@ -62,10 +62,19 @@
 ### 상태 머신
 
 ```
+# /brainstorm 포함 경로:
 idle → brainstorming → spec_draft → spec_ready → generating
-     → handoff_ready → evaluating → evaluated_pass → reflecting → done
-                                  → evaluated_fail  (사람이 재작업/스펙재정의/포기 결정)
+                                              → handoff_ready → evaluating → evaluated_pass → reflecting → done
+                                                                           → evaluated_fail  (사람이 재작업/스펙재정의/포기 결정)
+
+# /brainstorm 생략 경로 (/spec 직접 실행):
+idle → spec_ready → generating → ...
 ```
+
+- `brainstorming`: `/brainstorm` Step 1(제목 결정) 직후 기록
+- `spec_draft`: `/brainstorm` 완료 후 기록 — `/spec`이 아직 실행되지 않은 중간 상태
+- `spec_ready`: `/spec` 완료 후 기록 (brainstorm 유무 무관)
+- `/brainstorm` 생략 시 `spec_draft`는 거치지 않고 `idle → spec_ready`로 직접 전이
 
 상태는 `.claude-workflow/sessions/{title}.json` 에 기록됩니다 (gitignore, 로컬 전용).
 현재 상태 조회: `/workflow-status`

@@ -8,57 +8,7 @@
 ### Step 1: 상태 파일 스캔
 
 ```bash
-python3 -c "
-import json, os, glob, datetime
-
-sessions_dir = '.claude-workflow/sessions'
-if not os.path.exists(sessions_dir):
-    print('활성 세션 없음 — .claude-workflow/sessions/ 디렉토리가 없습니다.')
-    exit()
-
-files = sorted(glob.glob(f'{sessions_dir}/*.json'), key=os.path.getmtime, reverse=True)
-if not files:
-    print('활성 세션 없음')
-    exit()
-
-STATE_LABELS = {
-    'spec_draft':      '📝 spec 작성 필요',
-    'spec_ready':      '⚠️  [승인 게이트] spec 검토 후 /generate',
-    'generating':      '🔨 구현 진행 중',
-    'handoff_ready':   '📦 [다음] 별도 세션에서 /evaluate',
-    'evaluating':      '🔍 평가 진행 중',
-    'evaluated_pass':  '✅ [승인 게이트] PASS — 머지 확인 후 /reflect',
-    'evaluated_fail':  '❌ [승인 게이트] FAIL — 재작업/스펙재정의/포기 결정',
-    'reflecting':      '💭 회고 진행 중',
-    'done':            '🎉 완료',
-}
-
-print()
-print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-print('[workflow-status] 진행 중인 세션')
-print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-for f in files:
-    try:
-        d = json.load(open(f))
-        title = d.get('title', os.path.basename(f).replace('.json', ''))
-        state = d.get('state', 'unknown')
-        label = STATE_LABELS.get(state, state)
-        updated = d.get('updated_at', '')[:16].replace('T', ' ')
-        print(f'  {title}')
-        print(f'    상태: {label}')
-        print(f'    마지막 업데이트: {updated} UTC')
-        arts = d.get('artifacts', {})
-        existing = [k for k, v in arts.items() if v and os.path.exists(v)]
-        if existing:
-            print(f'    산출물: {\" / \".join(existing)}')
-        next_a = d.get('next_action')
-        if next_a:
-            print(f'    다음 액션: {next_a}')
-        print()
-    except Exception as e:
-        print(f'  {f}: 읽기 실패 ({e})')
-print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-"
+python3 .claude/scripts/workflow-status.py
 ```
 
 ### Step 2: git 컨텍스트 보조
