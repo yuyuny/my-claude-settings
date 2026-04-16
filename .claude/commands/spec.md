@@ -45,8 +45,6 @@ git worktree add .worktrees/{title} -b {title}
 - **brainstorms/{title}.md 있음**: "영향 받는 경로" 섹션을 스펙으로 **그대로 복사**. 탐색 에이전트 재실행 금지.
 - **없음**: 병렬 탐색 에이전트(sonnet × 2~3)로 영향 범위 파악.
 
-  서브에이전트 출력 계약: `.claude/rules/multi-agent-workflow.md` 준수.
-
   ```
   Launch parallel (sonnet):
     1. 관련 파일/모듈 구조 탐색 → `경로/파일 — 이유`
@@ -144,8 +142,8 @@ git commit -m "docs: add spec for {title}"
 - 스프린트당 딜리버블은 3~7개
 - 완료 기준은 주관적 표현 금지 ("좋은 UX" X → "버튼 클릭 후 1초 내 피드백" O)
 - 이전 세션의 evaluation/{title}.md가 있으면 반드시 반영
-- 야심찬 범위 설정: AI 기능 통합 기회가 있으면 적극 제안
+- 범위 확장 제안 가능: 사용자 목표에 부합하는 추가 기능이 있으면 딜리버블에 포함을 제안하되, 사용자 승인 없이 최종 스펙에 포함하지 않음
 - **영향 받는 경로 필수**: 주요 딜리버블마다 대체 실행 경로를 나열 (누락 시 구현 단계 FAIL 위험)
-- 처음 등장하는 도메인 용어는 `docs/GLOSSARY.md`가 있으면 추가 (없으면 생략)
+- `docs/GLOSSARY.md`에 기존 항목이 있는 경우에만 새 도메인 용어 추가 (빈 파일이면 생략)
 
 $ARGUMENTS

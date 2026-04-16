@@ -30,13 +30,11 @@ kebab-case 제목을 먼저 결정합니다.
 
 기존 코드베이스가 있는 경우 병렬 탐색 에이전트로 영향 범위를 파악합니다.
 
-서브에이전트 출력 계약: `.claude/rules/multi-agent-workflow.md` 준수.
-
 ```
 Launch parallel (sonnet):
-  1. 관련 파일/모듈 구조 탐색 → `경로/파일.ts — 이유`
-  2. 기존 패턴/컨벤션 확인   → `경로/파일.ts — 어떤 패턴`
-  3. 의존성/영향 범위 분석   → `경로/파일.ts — 영향 방향`
+  1. 관련 파일/모듈 구조 탐색 → `경로/파일 — 이유`
+  2. 기존 패턴/컨벤션 확인   → `경로/파일 — 어떤 패턴`
+  3. 의존성/영향 범위 분석   → `경로/파일 — 영향 방향`
 ```
 
 SCOPE 결과는 Step 3 질의에서 코드 근거로 인용합니다.
@@ -99,14 +97,6 @@ git commit -m "docs: brainstorm for {title}"
 
 ```bash
 .claude/scripts/workflow-advance.sh record {title} spec_draft brainstorm brainstorms/{title}.md
-```
-
-## 다음 단계
-
-커밋 완료 후 사용자에게 안내:
-
-```
-brainstorms/{title}.md 완료. 다음: /spec {title}
 ```
 
 $ARGUMENTS

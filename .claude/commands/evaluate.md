@@ -45,7 +45,6 @@ Generator의 VERIFY 결과를 신뢰하지 말 것 — 직접 확인.
   - `git log --oneline | grep "review:"` 로 리뷰 수정 커밋 존재 여부 확인 (이슈 없음 회차는 review 커밋이 없을 수 있음 — 핸드오프 로그 우선)
   - 1회 초과 회차의 적절성도 확인 (2-3 태스크당 1회 권장)
 
-서브에이전트 출력 계약: `.claude/rules/multi-agent-workflow.md` 준수.
 ```
 Launch parallel (sonnet):
   Agent 1: 테스트 스위트 실행 → 요약 3줄 + 실패 건수 (로그 dump 금지)
@@ -64,8 +63,6 @@ Launch parallel (sonnet):
 
 `../../evaluation/rubric-v1.md`를 Read하여 채점 기준, 가중치, PASS 기준을 확인합니다.
 루브릭 버전을 evaluation 파일 상단에 명시합니다. (`rubric-v1.md`가 없으면 평가를 중단하고 사용자에게 알립니다.)
-
-각 항목 1-10점:
 
 ### Step 6: 판정
 

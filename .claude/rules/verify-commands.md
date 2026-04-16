@@ -25,7 +25,7 @@ pnpm build      # 빌드 (해당 시)
 
 ## 스택별 참고 예시
 
-> 다른 스택 예시는 `docs/verify-commands-examples.md` 참조.
+> 다른 스택 예시는 `.claude/docs/verify-commands-examples.md` 참조.
 > 프로젝트 세팅 시에만 열어보고, 이 파일에는 현재 프로젝트 게이트만 유지합니다.
 
 ## 규칙

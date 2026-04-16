@@ -15,9 +15,10 @@
     reflect-batch.md   ← /reflect-batch (패턴 집계, sonnet)
     workflow-status.md ← /workflow-status (상태 조회, 읽기 전용)
   rules/
-    multi-agent-workflow.md  ← 핵심 워크플로우 규칙
+    multi-agent-workflow.md  ← 핵심 워크플로우 규칙 (모델 배정, 핵심 규칙, 출력 계약)
     verify-commands.md       ← 검증 게이트 정의 (프로젝트마다 수정)
-    web-browsing.md          ← 웹 탐색 규칙
+  docs/
+    workflow-reference.md    ← 상태 머신, 디렉토리, 세미-자동화 상세
   scripts/
     workflow-advance.sh      ← Stop hook + 상태 기록 + merge/cleanup
     workflow-status.py       ← /workflow-status 스크립트
@@ -29,7 +30,7 @@
     reflections/       ← 세션 회고
 brainstorms/           ← /brainstorm 산출물 (메인 브랜치)
 docs/
-  GLOSSARY.md          ← 도메인 용어 사전
+  GLOSSARY.md          ← 도메인 용어 사전 (항목이 있을 때만 사용)
 evaluation/
   rubric-v1.md         ← 평가 루브릭
 reflections/
@@ -211,3 +212,4 @@ claude "/workflow-status"
 2. `.claude/rules/verify-commands.md`의 **현재 프로젝트 게이트** 섹션을 프로젝트 스택에 맞게 수정합니다
 3. `.claude/settings.local.json`에서 필요한 권한(pnpm, python3 등)을 추가합니다
 4. `evaluation/rubric-v1.md`를 프로젝트 유형(UI/CLI/라이브러리)에 맞게 검토합니다
+5. `.claude/settings.json`의 `"model"` 설정을 확인합니다 (기본값: `opusplan`)
