@@ -2,15 +2,8 @@
 .DS_Store
 Thumbs.db
 
-# Git worktrees
-.worktrees/
-.claude/worktrees/
-
 # Claude
 .claude/settings.local.json
-
-# Workflow state (local execution state, not project artifacts)
-.claude-workflow/
 
 # Environment
 .env

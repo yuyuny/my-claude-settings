@@ -4,18 +4,5 @@
     "defaultMode": "plan"
   },
   "model": "opusplan",
-  "enabledPlugins": {},
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/scripts/workflow-advance.sh"
-          }
-        ]
-      }
-    ]
-  }
+  "enabledPlugins": {}
 }
