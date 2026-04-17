@@ -4,7 +4,7 @@ Personal Claude Code settings repository.
 
 ## Available Commands
 
-- `/reflect` — Session summary + Claude's honest diary
+- `/reflect` — Session summary + Claude's honest diary, saved to `reflections/`
 
 ## Settings
 

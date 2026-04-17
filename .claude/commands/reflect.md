@@ -1,7 +1,7 @@
 # Session Reflection
 
 Summarize the current conversation session and write an honest diary from Claude's perspective.
-Operates purely from conversation context — no external files or artifacts required.
+Saves the result to `reflections/` in the current working directory.
 
 ## Process
 
@@ -17,8 +17,23 @@ Write honestly from Claude's perspective — a diary, not a status report.
 - Express feelings: "I was confused", "this felt satisfying", "this was surprising"
 - Exclude generalities that could apply to any session
 
-### Step 3: Output
-Print directly to the terminal. Do not save to a file.
+### Step 3: Save to File
+
+1. **Determine the slug**:
+   - If `$ARGUMENTS` is provided, use it as-is (e.g., `/reflect my-feature` → `my-feature`)
+   - Otherwise, generate a kebab-case slug from the session's core topic (3-5 words, e.g., `reflect-file-save-fix`)
+
+2. **Determine the file path**:
+   - Run `date +%Y-%m-%d-%H%M` via Bash to get the current timestamp
+   - Path: `./reflections/YYYY-MM-DD-HHMM-{slug}.md`
+   - If `./reflections/` does not exist, create it first (Bash: `mkdir -p reflections`)
+
+3. **Write the file**:
+   - Use the Write tool to save the full reflection body (Output Format below) to the file
+
+4. **Print only the link**:
+   - Output a single markdown link to the terminal: `[Session reflection saved](reflections/YYYY-MM-DD-HHMM-slug.md)`
+   - Do NOT print the reflection body to the terminal
 
 ## Output Format
 
@@ -47,6 +62,6 @@ Where token usage spiked and what the human could have done to prevent it (e.g.,
 - Total length **within 40 lines** (excluding headers) — concise but specific
 - No generalities: sentences like "code review is important" have no value
 - Maintain first-person perspective: Claude's diary, not a report
-- No file output: terminal only (user can request auto memory save if needed)
+- Save the reflection body to `reflections/YYYY-MM-DD-HHMM-{slug}.md`; print only the relative markdown link to the terminal
 
 $ARGUMENTS
