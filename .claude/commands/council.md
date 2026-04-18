@@ -9,6 +9,8 @@ Get independent perspectives from creative-director, technical-director, designe
 
 Use this **before** a major decision — direction change, tech-stack shift, scope question, ambiguous spec.
 
+> **Cost note:** `/council` runs Opus×2 + Sonnet×2 in parallel. Use it sparingly — for decisions you genuinely cannot resolve alone. For smaller doubts, ask one agent directly.
+
 ## Process
 
 1. **Establish the topic.** If `$ARGUMENTS` is a file path, read it and use it as the subject. Otherwise treat `$ARGUMENTS` as the topic text.

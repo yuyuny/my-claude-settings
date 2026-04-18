@@ -11,10 +11,7 @@ Run the full verification pass on a feature.
 
 1. **Locate the spec.** As with `/build`, refuse if no spec found.
 
-2. **Run automated checks:**
-   - Detect the project's package manager: look for `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, or `package-lock.json` in that order; fall back to `npm`.
-   - Read `package.json` `scripts`. Run whichever of `typecheck`, `test:run` (or `test`), `lint`, and `lint:css` exist, using the detected package manager.
-   - Collect pass/fail per check.
+2. **Run automated checks** per `.claude/rules/package-manager.md` (also check `lint:css` if present). Collect pass/fail per check.
 
 3. **If any automated check fails:** stop here. Append a `## Check — <date>` block with the failure details, then prompt the user: "Fix the failing gates, then re-run `/check`." Do **not** proceed to steps 4–5.
 

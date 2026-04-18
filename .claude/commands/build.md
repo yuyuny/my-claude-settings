@@ -19,10 +19,7 @@ Implement the feature described in the given spec.
 
 5. **Present the approved plan to the user.** Wait for user approval before any file edits.
 
-6. **Engineer implements.** One focused pass. After editing:
-   - Detect the project's package manager: look for `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, or `package-lock.json` in that order; fall back to `npm`.
-   - Read `package.json` `scripts`. Run whichever of `typecheck`, `test:run` (or `test`), and `lint` exist, using the detected package manager.
-   - Fix what broke. Report results.
+6. **Engineer implements.** One focused pass. After editing, detect the package manager and run checks per `.claude/rules/package-manager.md`. Fix what broke. Report results.
 
 7. **Do not commit.** Commits require explicit user instruction.
 

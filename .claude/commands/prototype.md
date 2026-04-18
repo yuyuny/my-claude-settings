@@ -40,8 +40,6 @@ Scaffold a spike in `prototypes/<name>/`. The point is fast learning, not qualit
 
 ## Rules
 
-- Nothing from `prototypes/` is ever imported by `src/`.
-- Prototypes are not reviewed by creative-director or technical-director during exploration — they're off-map.
-- Keep each prototype under ~500 lines. If it's bigger, it's not a prototype anymore.
+See `.claude/rules/prototypes.md` for the full rule set. Key constraints: no `src/` imports, no director review, ~500 line cap.
 
 $ARGUMENTS

@@ -1,3 +1,8 @@
+---
+description: Session Reflection — honest first-person diary saved to reflections/.
+argument-hint: [slug]
+---
+
 # Session Reflection
 
 Summarize the current conversation session and write an honest diary from Claude's perspective.
@@ -19,21 +24,11 @@ Write honestly from Claude's perspective — a diary, not a status report.
 
 ### Step 3: Save to File
 
-1. **Determine the slug**:
-   - If `$ARGUMENTS` is provided, use it as-is (e.g., `/reflect my-feature` → `my-feature`)
-   - Otherwise, generate a kebab-case slug from the session's core topic (3-5 words, e.g., `reflect-file-save-fix`)
-
-2. **Determine the file path**:
-   - Run `date +%Y-%m-%d-%H%M` via Bash to get the current timestamp
-   - Path: `./reflections/YYYY-MM-DD-HHMM-{slug}.md`
-   - If `./reflections/` does not exist, create it first (Bash: `mkdir -p reflections`)
-
-3. **Write the file**:
-   - Use the Write tool to save the full reflection body (Output Format below) to the file
-
-4. **Print only the link**:
-   - Output a single markdown link to the terminal: `[Session reflection saved](reflections/YYYY-MM-DD-HHMM-slug.md)`
-   - Do NOT print the reflection body to the terminal
+1. Run `date +%Y-%m-%d-%H%M` to get the timestamp.
+2. Slug: use `$ARGUMENTS` if provided, otherwise generate a 3-5 word kebab-case summary of the session.
+3. Run `mkdir -p reflections/` if it doesn't exist.
+4. Write the reflection to `./reflections/YYYY-MM-DD-HHMM-{slug}.md` using the Output Format below.
+5. Print only the relative markdown link: `[Session reflection saved](reflections/YYYY-MM-DD-HHMM-slug.md)`
 
 ## Output Format
 
@@ -52,16 +47,14 @@ Write honestly from Claude's perspective — a diary, not a status report.
 Traps, unfinished threads, intentional decisions that look odd.}
 
 ## Feedback for the Human
-{What the human did well in this session — specific requests or decisions that made the work easier.
-What could have been better — vague instructions, unnecessary back-and-forth, scope changes mid-task.
-How the conversation could have been shorter: what single well-formed request would have replaced multiple exchanges.
-Where token usage spiked and what the human could have done to prevent it (e.g., providing context upfront, narrowing scope earlier, avoiding plan rejections).}
+{What the human did well. What could have been clearer. How this session could have been shorter.
+Where token usage spiked and why.}
 ```
 
 ## Rules
-- Total length **within 40 lines** (excluding headers) — concise but specific
+- Total length **within 60 lines** (excluding headers) — concise but specific
 - No generalities: sentences like "code review is important" have no value
 - Maintain first-person perspective: Claude's diary, not a report
-- Save the reflection body to `reflections/YYYY-MM-DD-HHMM-{slug}.md`; print only the relative markdown link to the terminal
+- Do NOT print the reflection body to terminal — print only the link
 
 $ARGUMENTS

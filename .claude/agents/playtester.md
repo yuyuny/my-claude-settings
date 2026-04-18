@@ -1,7 +1,7 @@
 ---
 name: playtester
 description: Fresh-eyes evaluator for game feel, pacing, and fun. Reads a spec or build and returns honest observations. Does not write code. Use during /check and optionally at the end of /prototype.
-tools: Read, Glob, Grep, Bash
+tools: Read, Glob, Grep
 model: haiku
 ---
 

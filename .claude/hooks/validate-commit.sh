@@ -18,8 +18,8 @@ block() {
 case "$cmd" in
   *"git commit"*"--no-verify"*)  block "git commit --no-verify bypasses hooks. Fix the hook failure instead." ;;
   *"git commit"*"--no-gpg-sign"*) block "git commit --no-gpg-sign bypasses signing." ;;
-  *"git push"*"--force"*main*|*"git push"*"--force"*master*) block "git push --force to main/master is destructive." ;;
-  *"git push"*"-f"*main*|*"git push"*"-f"*master*) block "git push -f to main/master is destructive." ;;
+  *"git push"*"--force"*" main"*|*"git push"*"--force"*":main"*|*"git push"*"--force"*" master"*|*"git push"*"--force"*":master"*) block "git push --force to main/master is destructive." ;;
+  *"git push"*"-f"*" main"*|*"git push"*"-f"*":main"*|*"git push"*"-f"*" master"*|*"git push"*"-f"*":master"*) block "git push -f to main/master is destructive." ;;
   *"rm -rf"*"/"*)
     # Allow rm -rf under project paths; block obvious root-scale deletes.
     case "$cmd" in

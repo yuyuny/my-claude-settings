@@ -13,7 +13,7 @@ Draft a spec for a feature, saved under `specs/YYYY-MM-DD-<slug>.md`.
 
 2. **Invoke the `designer` subagent** to draft the spec using the skeleton in its definition. The draft covers Problem, Options, Decision, Acceptance criteria, Playtest plan, Open issues.
 
-3. **Invoke the `creative-director` subagent** on the draft for pillar-alignment review. Include its verdict block at the top of the spec (commented out if ALIGNED, visible if TENSION).
+3. **Invoke the `creative-director` subagent** on the draft for pillar-alignment review. Include its verdict block at the top of the spec (commented out if `ALIGNED` or `AMPLIFY`, visible if `TENSION` or `OFF-PILLAR`). Always include any aesthetic proposals the creative-director offers, regardless of verdict.
 
 4. **Present the full draft to the user.** Do not save yet.
 

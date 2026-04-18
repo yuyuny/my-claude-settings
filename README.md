@@ -17,7 +17,7 @@ Not a framework. Not a plugin. Just configuration files for Claude Code that enc
                      /prototype (uncertainty branch; promote to /spec when clear)
 ```
 
-1. **`/spec <name>`** — Designer drafts a spec. Creative-director checks pillar alignment. You approve before save.
+1. **`/spec <name>`** — Designer drafts a spec. Creative-director checks pillar alignment and offers sub-pillar aesthetic proposals. You approve before save.
 2. **`/build <spec>`** — Engineer proposes a plan. Technical-director checks architecture. You approve before code.
 3. **`/check <spec>`** — Automated gates (typecheck/test/lint) + playtester observations appended to the spec.
 4. **`/reflect`** — Honest diary of the session, 40-line cap, saved to `reflections/`.
@@ -31,7 +31,7 @@ Plus:
 
 | Agent | Model | Role |
 |---|---|---|
-| `creative-director` | Opus | pillars, tone, identity. Read-only. |
+| `creative-director` | Opus | pillars, tone, identity. Validates alignment and proposes sub-pillar aesthetic improvements. |
 | `technical-director` | Opus | architecture, performance, ADRs. Read-only. |
 | `designer` | Sonnet | spec authorship, playtest planning. |
 | `engineer` | Sonnet | implementation, code review. Two modes: strict (`src/`) and relaxed (`prototypes/`). |
