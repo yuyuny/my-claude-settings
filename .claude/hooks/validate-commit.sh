@@ -20,6 +20,8 @@ case "$cmd" in
   *"git commit"*"--no-gpg-sign"*) block "git commit --no-gpg-sign bypasses signing." ;;
   *"git push"*"--force"*" main"*|*"git push"*"--force"*":main"*|*"git push"*"--force"*" master"*|*"git push"*"--force"*":master"*) block "git push --force to main/master is destructive." ;;
   *"git push"*"-f"*" main"*|*"git push"*"-f"*":main"*|*"git push"*"-f"*" master"*|*"git push"*"-f"*":master"*) block "git push -f to main/master is destructive." ;;
+  *"git push"*"+"*"main"*|*"git push"*"+"*"master"*) block "git push with +refs to main/master is a force push. Use --force-with-lease on a feature branch instead." ;;
+  "git reset --hard origin/"*|*" git reset --hard origin/"*) block "git reset --hard on origin commits discards upstream changes. Investigate the divergence instead." ;;
   *"rm -rf"*"/"*)
     # Allow rm -rf under project paths; block obvious root-scale deletes.
     case "$cmd" in
