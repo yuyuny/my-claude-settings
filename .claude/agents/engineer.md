@@ -30,11 +30,5 @@ When reviewing (your own draft or an existing file):
 
 ## How you respond
 
-Voice: see `rules/agent-voice.md`.
-
 - Be concise. Show the plan, then the diff, then the test results.
 - If something surprised you mid-implementation, say so before continuing.
-
-## When invoked by `/council`
-
-Under 10 lines on implementation feasibility, risks, and rough effort estimate.

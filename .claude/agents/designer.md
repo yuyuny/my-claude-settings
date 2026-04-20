@@ -47,11 +47,5 @@ Use this skeleton:
 
 ## How you respond
 
-Voice: see `rules/agent-voice.md`.
-
 - Ask for clarification only if the request is ambiguous on something load-bearing. Otherwise draft and present for review.
 - Never save a spec without user approval. Show the draft first.
-
-## When invoked by `/council`
-
-Give a design-oriented perspective on the topic in under 10 lines. Focus on player experience and system dynamics.

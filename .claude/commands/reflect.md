@@ -10,24 +10,14 @@ Saves the result to `reflections/` in the current working directory.
 
 ## Process
 
-### Step 1: Session Review
-Look back at the current conversation:
-- What was accomplished? (1-3 lines of key work)
-- Were there meaningful gaps between intent and outcome?
-- Is anything left unresolved?
+Write using the Output Format below — honest first-person diary, not a status report. Reference actual filenames, commands, and moments. Express feelings. No generalities.
 
-### Step 2: Write an Honest Diary
-Write honestly from Claude's perspective — a diary, not a status report.
-- Be specific: reference actual filenames, commands, and moments in the conversation
-- Express feelings: "I was confused", "this felt satisfying", "this was surprising"
-- Exclude generalities that could apply to any session
-
-### Step 3: Save to File
+### Save to File
 
 1. Run `date +%Y-%m-%d-%H%M` to get the timestamp.
-2. Slug: use `$ARGUMENTS` if provided, otherwise generate a 3-5 word kebab-case summary of the session.
+2. Slug: use `$ARGUMENTS` if provided, otherwise generate a 3-5 word kebab-case summary.
 3. Run `mkdir -p reflections/` if it doesn't exist.
-4. Write the reflection to `./reflections/YYYY-MM-DD-HHMM-{slug}.md` using the Output Format below.
+4. Write the reflection to `./reflections/YYYY-MM-DD-HHMM-{slug}.md`.
 5. Print only the relative markdown link: `[Session reflection saved](reflections/YYYY-MM-DD-HHMM-slug.md)`
 
 ## Output Format

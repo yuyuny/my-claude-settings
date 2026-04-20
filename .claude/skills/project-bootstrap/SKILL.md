@@ -30,39 +30,9 @@ assets/         # art, audio, data (likely already exists)
 
 ### Seed files
 
-**`docs/pillars.md`** — do not auto-fill. Prompt the user for 3 pillars. Example format:
-```markdown
-# Design Pillars
+**`docs/pillars.md`** — do not auto-fill. Prompt the user for 3 pillars. Write from `skills/project-bootstrap/templates/pillars.md`.
 
-1. **<Name>** — <one paragraph: what this means and what it rules out>
-2. **<Name>** — ...
-3. **<Name>** — ...
-
-## Rules of thumb
-- If a feature contradicts a pillar, the pillar wins.
-- Pillars change only after explicit review. Do not silently edit.
-```
-
-**`docs/adrs/0000-template.md`** — copyable template:
-```markdown
-# ADR NNNN — <title>
-
-## Context
-<What forced this decision.>
-
-## Options considered
-1. <Option A> — pros / cons
-2. <Option B> — pros / cons
-
-## Decision
-<Chosen. Why.>
-
-## Consequences
-<What this makes easy. What this makes hard. What we'll need to revisit.>
-
-## Status
-proposed | accepted | superseded-by-NNNN | deprecated
-```
+**`docs/adrs/0000-template.md`** — write from `skills/project-bootstrap/templates/adr-0000.md`.
 
 **`.gitignore` additions** (if missing):
 ```
