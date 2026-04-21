@@ -9,7 +9,7 @@ Implement the feature described in the given spec.
 
 ## Process
 
-1. **Locate the spec.** Look in `specs/` for a file matching `$ARGUMENTS`. If none found or argument is missing, **refuse** and suggest running `/spec` first. Do not guess.
+1. **Locate the spec.** Look in `specs/` for a file matching `$ARGUMENTS` — ignore `specs/.drafts/**`. Unapproved drafts are not buildable. If none found or argument is missing, **refuse** and suggest running `/spec` first. Do not guess.
 
 2. **Read the spec fully.** Note: acceptance criteria, open issues, playtest plan. If acceptance criteria are vague, ask the user to tighten them before proceeding.
 
